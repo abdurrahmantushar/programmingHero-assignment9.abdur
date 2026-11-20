@@ -5,6 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
+import Image from "next/image";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -27,7 +28,12 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-[#eee5db] bg-white">
       <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-5 sm:px-8 lg:px-12">
         <Link href="/" className="flex shrink-0 items-center gap-1">
-          <span className="text-[30px]">🍕</span>
+          <Image
+            src="/images/categories/allPizza.png"
+            alt="PizzaHub Logo"
+            width={40}
+            height={40}
+          />
           <span className="text-[25px] font-extrabold tracking-tight text-[#24211f]">
             Pizza<span className="text-[#e62e20]">Hub</span>
           </span>
