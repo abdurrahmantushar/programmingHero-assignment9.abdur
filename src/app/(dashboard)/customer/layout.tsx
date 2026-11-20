@@ -1,6 +1,6 @@
 
 "use client";
-
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -15,7 +15,6 @@ import {
   LogOut,
   UserRound,
 } from "lucide-react";
-import { useState } from "react";
 
 const navItems = [
   { name: "Overview", href: "/customer", icon: LayoutDashboard },
@@ -25,8 +24,7 @@ const navItems = [
   { name: "My Favorites", href: "/customer/favorites", icon: Heart },
   { name: "Settings", href: "/customer/settings", icon: Settings },
 ];
-
-export default function CustomerLayout({
+function CustomerLayoutContent({
   children,
 }: {
   children: React.ReactNode;
@@ -149,5 +147,17 @@ export default function CustomerLayout({
         <main className="p-5 sm:p-8">{children}</main>
       </div>
     </div>
+  );
+}
+
+export default function CustomerLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <Suspense fallback={null}>
+      <CustomerLayoutContent>{children}</CustomerLayoutContent>
+    </Suspense>
   );
 }
