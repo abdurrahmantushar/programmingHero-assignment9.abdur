@@ -19,7 +19,6 @@ import {
 const navItems = [
   { name: "Overview", href: "/customer", icon: LayoutDashboard },
   { name: "My Orders", href: "/customer/orders", icon: ShoppingBag },
-  { name: "Order Tracking", href: "/customer/tracking", icon: MapPin },
   { name: "My Addresses", href: "/customer/addresses", icon: MapPin },
   { name: "My Favorites", href: "/customer/favorites", icon: Heart },
   { name: "Settings", href: "/customer/settings", icon: Settings },

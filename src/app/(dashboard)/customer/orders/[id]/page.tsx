@@ -17,9 +17,11 @@ import {
     XCircle,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import Image from "next/image";
 
 type Order = {
     _id: string;
+    image: string;
     itemName: string;
     price: number;
     quantity: number;
@@ -218,6 +220,13 @@ export default function OrderDetailsPage() {
 
                         <div className="flex flex-col justify-between gap-5 pt-5 sm:flex-row sm:items-center">
                             <div>
+                                <Image
+                                    src={order.image}
+                                    alt={order.itemName}
+                                    width={100}
+                                    height={100}
+                                    className="rounded-xl"
+                                />
                                 <h3 className="text-xl font-extrabold text-gray-900">
                                     {order.itemName}
                                 </h3>

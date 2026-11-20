@@ -2,21 +2,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
-  MapPin,
-  ShoppingBag,
   CalendarDays,
+  CheckCircle2,
+  LoaderCircle,
+  MapPin,
+  Pizza,
+  ShoppingBag,
   MessageSquare,
   Minus,
   Plus,
-  CheckCircle2,
-  LoaderCircle,
+  Home,
+  BriefcaseBusiness,
+  MapPinned,
+  Phone,
+  Star,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 interface MenuItem {
   _id: string;
@@ -26,6 +35,19 @@ interface MenuItem {
   price: number;
   images: string[];
   location: string;
+}
+
+interface Address {
+  _id: string;
+  customerId: string;
+  fullName: string;
+  phone: string;
+  address: string;
+  city: string;
+  area: string;
+  postalCode: string;
+  label: string;
+  isDefault: boolean;
 }
 
 export default function OrderPage({
@@ -46,8 +68,12 @@ export default function OrderPage({
 
   const [quantity, setQuantity] = useState(1);
   const [deliveryDate, setDeliveryDate] = useState("");
-  const [deliveryAddress, setDeliveryAddress] = useState("");
   const [message, setMessage] = useState("");
+
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [addressLoading, setAddressLoading] = useState(true);
+  const [selectedAddressId, setSelectedAddressId] = useState("");
+  const [addressError, setAddressError] = useState("");
 
   useEffect(() => {
     params.then(({ id }) => setId(id));
@@ -64,7 +90,7 @@ export default function OrderPage({
     const fetchPizza = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/menu-items/${id}`,
+          `${API_URL}/api/menu-items/${id}`,
           { cache: "no-store" }
         );
 
@@ -88,45 +114,109 @@ export default function OrderPage({
   }, [id, session, isPending, router]);
 
   useEffect(() => {
-  const today = new Date();
+    if (isPending) return;
 
-  const formattedDate = [
-    today.getFullYear(),
-    String(today.getMonth() + 1).padStart(2, "0"),
-    String(today.getDate()).padStart(2, "0"),
-  ].join("-");
+    if (!session?.user?.id) {
+      setAddressLoading(false);
+      return;
+    }
 
-  setMinDate(formattedDate);
-}, []);
+    const fetchAddresses = async () => {
+      try {
+        setAddressLoading(true);
+        setAddressError("");
+
+        const response = await fetch(
+          `${API_URL}/api/customer/${session.user.id}/addresses`
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || "Failed to load addresses");
+        }
+
+        const savedAddresses: Address[] = result.data || [];
+
+        setAddresses(savedAddresses);
+
+        const defaultAddress = savedAddresses.find(
+          (address) => address.isDefault
+        );
+
+        if (defaultAddress) {
+          setSelectedAddressId(defaultAddress._id);
+        } else if (savedAddresses.length > 0) {
+          setSelectedAddressId(savedAddresses[0]._id);
+        }
+      } catch (error) {
+        setAddressError(
+          error instanceof Error
+            ? error.message
+            : "Failed to load saved addresses"
+        );
+      } finally {
+        setAddressLoading(false);
+      }
+    };
+
+    fetchAddresses();
+  }, [session?.user?.id, isPending]);
+
+  useEffect(() => {
+    const today = new Date();
+
+    const formattedDate = [
+      today.getFullYear(),
+      String(today.getMonth() + 1).padStart(2, "0"),
+      String(today.getDate()).padStart(2, "0"),
+    ].join("-");
+
+    setMinDate(formattedDate);
+  }, []);
 
   const totalPrice = pizza ? pizza.price * quantity : 0;
+
+  const selectedAddress = addresses.find(
+    (address) => address._id === selectedAddressId
+  );
+
+  const getAddressIcon = (label: string) => {
+    if (label === "Office") return BriefcaseBusiness;
+    if (label === "Other") return MapPinned;
+    return Home;
+  };
 
   const handleOrder = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!pizza || !session?.user?.id) return;
 
+    if (!selectedAddress) {
+      setError("Please select a delivery address.");
+      return;
+    }
+
     try {
       setOrderLoading(true);
       setError("");
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/orders`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            itemId: pizza._id,
-            customerId: session.user.id,
-            quantity,
-            deliveryDate,
-            deliveryAddress,
-            message,
-          }),
-        }
-      );
+      const deliveryAddress = `${selectedAddress.fullName}, ${selectedAddress.phone}, ${selectedAddress.address}, ${selectedAddress.area}, ${selectedAddress.city} - ${selectedAddress.postalCode}`;
+
+      const response = await fetch(`${API_URL}/api/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          itemId: pizza._id,
+          customerId: session.user.id,
+          quantity,
+          deliveryDate,
+          deliveryAddress,
+          message,
+        }),
+      });
 
       const result = await response.json();
 
@@ -188,7 +278,7 @@ export default function OrderPage({
           </p>
 
           <Link
-            href="/dashboard"
+            href="/customer"
             className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-[#e62e20] px-6 py-4 font-semibold text-white transition hover:bg-[#c92318]"
           >
             Go to Dashboard
@@ -394,28 +484,145 @@ export default function OrderPage({
               </div>
 
               <div>
-                <label
-                  htmlFor="deliveryAddress"
-                  className="mb-2 block text-sm font-bold text-[#292929]"
-                >
-                  Delivery Address
-                </label>
+                <div className="mb-3 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+                  <label className="text-sm font-bold text-[#292929]">
+                    Select Delivery Address
+                  </label>
 
-                <div className="relative">
-                  <MapPin
-                    size={19}
-                    className="absolute left-4 top-4 text-[#e62e20]"
-                  />
-                  <textarea
-                    id="deliveryAddress"
-                    required
-                    rows={3}
-                    value={deliveryAddress}
-                    onChange={(e) => setDeliveryAddress(e.target.value)}
-                    placeholder="Enter your full delivery address..."
-                    className="w-full resize-none rounded-xl border border-[#eee5db] bg-[#fffaf3] py-3.5 pl-12 pr-4 text-sm text-[#292929] outline-none transition placeholder:text-gray-400 focus:border-[#e62e20] focus:ring-2 focus:ring-red-100"
-                  />
+                  <Link
+                    href="/customer/addresses"
+                    className="inline-flex w-fit items-center gap-1.5 text-sm font-bold text-[#e62e20] transition hover:text-[#c92318]"
+                  >
+                    <Plus size={16} />
+                    Add New Address
+                  </Link>
                 </div>
+
+                {addressLoading ? (
+                  <div className="flex items-center justify-center rounded-xl border border-[#eee5db] bg-[#fffaf3] py-10">
+                    <LoaderCircle
+                      size={25}
+                      className="animate-spin text-[#e62e20]"
+                    />
+                  </div>
+                ) : addressError ? (
+                  <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+                    {addressError}
+                  </div>
+                ) : addresses.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-[#e9d7c7] bg-[#fffaf3] px-5 py-8 text-center">
+                    <MapPin
+                      size={32}
+                      className="mx-auto text-[#e62e20]"
+                    />
+                    <h3 className="mt-3 font-bold text-[#292929]">
+                      No Saved Address
+                    </h3>
+                    <p className="mt-2 text-sm text-gray-500">
+                      Add a delivery address before placing your order.
+                    </p>
+                    <Link
+                      href="/customer/addresses"
+                      className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#e62e20] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#c92318]"
+                    >
+                      <Plus size={17} />
+                      Add Your Address
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {addresses.map((address) => {
+                      const AddressIcon = getAddressIcon(address.label);
+                      const isSelected =
+                        selectedAddressId === address._id;
+
+                      return (
+                        <button
+                          key={address._id}
+                          type="button"
+                          onClick={() =>
+                            setSelectedAddressId(address._id)
+                          }
+                          className={`relative rounded-2xl border p-4 text-left transition ${
+                            isSelected
+                              ? "border-[#e62e20] bg-red-50/50 ring-2 ring-red-100"
+                              : "border-[#eee5db] bg-white hover:border-orange-300"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2.5">
+                              <div
+                                className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                                  isSelected
+                                    ? "bg-red-100 text-[#e62e20]"
+                                    : "bg-[#fff3e5] text-[#e62e20]"
+                                }`}
+                              >
+                                <AddressIcon size={19} />
+                              </div>
+                              <div>
+                                <p className="font-bold text-[#292929]">
+                                  {address.label}
+                                </p>
+                                {address.isDefault && (
+                                  <span className="mt-1 inline-flex items-center gap-1 text-[10px] font-bold text-[#e62e20]">
+                                    <Star size={10} fill="currentColor" />
+                                    DEFAULT
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div
+                              className={`flex h-5 w-5 items-center justify-center rounded-full border ${
+                                isSelected
+                                  ? "border-[#e62e20] bg-[#e62e20] text-white"
+                                  : "border-gray-300"
+                              }`}
+                            >
+                              {isSelected && (
+                                <CheckCircle2 size={14} />
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="mt-4 space-y-2">
+                            <p className="text-sm font-bold text-gray-800">
+                              {address.fullName}
+                            </p>
+
+                            <p className="flex items-start gap-2 text-xs leading-5 text-gray-500">
+                              <MapPin
+                                size={14}
+                                className="mt-0.5 shrink-0 text-[#e62e20]"
+                              />
+                              <span>
+                                {address.address}, {address.area},{" "}
+                                {address.city} - {address.postalCode}
+                              </span>
+                            </p>
+
+                            <p className="flex items-center gap-2 text-xs text-gray-500">
+                              <Phone
+                                size={13}
+                                className="text-[#e62e20]"
+                              />
+                              {address.phone}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {!addressLoading &&
+                  addresses.length > 0 &&
+                  !selectedAddress && (
+                    <p className="mt-2 text-xs text-red-600">
+                      Please select a delivery address.
+                    </p>
+                  )}
               </div>
 
               <div>
@@ -453,9 +660,7 @@ export default function OrderPage({
 
               <div className="rounded-2xl bg-[#fffaf3] p-5">
                 <div className="flex justify-between text-sm text-gray-500">
-                  <span>
-                    Pizza price × {quantity}
-                  </span>
+                  <span>Pizza price × {quantity}</span>
                   <span>৳{totalPrice}</span>
                 </div>
 
@@ -473,7 +678,12 @@ export default function OrderPage({
 
               <button
                 type="submit"
-                disabled={orderLoading}
+                disabled={
+                  orderLoading ||
+                  addressLoading ||
+                  addresses.length === 0 ||
+                  !selectedAddress
+                }
                 className="flex w-full items-center justify-center gap-3 rounded-xl bg-[#e62e20] px-6 py-4 font-bold text-white shadow-lg shadow-red-100 transition hover:bg-[#c92318] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {orderLoading ? (
