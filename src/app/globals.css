@@ -1,6 +1,8 @@
 
 @import "tailwindcss";
 
+
+
 :root {
   --background: #fffaf3;
   --foreground: #25211e;
@@ -49,4 +51,14 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   margin: 0;
+}
+
+/* Mobile only: prevent any accidental sideways scrolling.
+   `clip` does not create a scroll container, so the sticky navbar still works. */
+@media (max-width: 767px) {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: clip;
+  }
 }

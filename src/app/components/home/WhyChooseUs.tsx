@@ -31,8 +31,8 @@ const features = [
 
 export default function WhyChooseUs() {
   return (
-    <section className="bg-[#991B1B] py-16 sm:py-20">
-      <div className="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12">
+<section className="w-full bg-[#991B1B] py-16 sm:py-20">
+  <div className="mx-auto w-full min-w-0 max-w-[1440px] px-5 sm:px-8 lg:px-12">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           {features.map((feature) => {
             const Icon = feature.icon;

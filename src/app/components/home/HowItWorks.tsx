@@ -37,9 +37,9 @@ export default function HowItWorks() {
   return (
     <section
       id="how-it-works"
-      className="bg-[#FFF8F0] py-16 sm:py-20"
+      className="w-full bg-[#FFF8F0] py-16 sm:py-20"
     >
-      <div className="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12">
+      <div className="mx-auto w-full min-w-0 max-w-[1440px] px-5 sm:px-8 lg:px-12">
         <div className="mb-14 text-center">
           <span className="mb-3 inline-block text-sm font-bold uppercase tracking-[3px] text-[#E6392E]">
             Simple Process

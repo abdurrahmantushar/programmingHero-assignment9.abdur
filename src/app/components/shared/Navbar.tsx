@@ -26,7 +26,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[#eee5db] bg-white">
-      <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-5 sm:px-8 lg:px-12">
+      <div className="mx-auto flex h-[72px] w-full max-w-[1440px] items-center justify-between px-4 sm:px-8 lg:px-12">
         <Link href="/" className="flex shrink-0 items-center gap-1">
           <Image
             src="/images/categories/allPizza.png"
@@ -55,7 +55,7 @@ export default function Navbar() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 sm:flex">
+        <div className="hidden items-center gap-3 lg:flex">
           <Link
             href="/sign-in"
             className="rounded-lg border border-[#e62e20] px-5 py-2.5 text-sm font-semibold text-[#e62e20] transition-colors hover:bg-[#fff1ed]"
@@ -74,7 +74,7 @@ export default function Navbar() {
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="rounded-lg p-2 text-[#292929] hover:bg-[#fff1ed] sm:hidden"
+          className="rounded-lg p-2 text-[#292929] hover:bg-[#fff1ed] lg:hidden"
           aria-label={isOpen ? "Close menu" : "Open menu"}
           aria-expanded={isOpen}
         >
@@ -83,7 +83,7 @@ export default function Navbar() {
       </div>
 
       {isOpen && (
-        <div className="border-t border-[#eee5db] bg-white px-5 py-5 sm:hidden">
+        <div className="border-t border-[#eee5db] bg-white px-5 py-5 lg:hidden">
           <nav className="flex flex-col gap-1">
             {navLinks.map((link) => (
               <Link
