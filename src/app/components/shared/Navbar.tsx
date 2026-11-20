@@ -1,11 +1,20 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
 import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  CircleUserRound,
+  Menu,
+  X,
+  LayoutDashboard,
+  LogOut,
+  ChevronDown,
+} from "lucide-react";
+import { authClient } from "@/lib/auth-client";
+import toast from "react-hot-toast";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -17,15 +26,71 @@ const navLinks = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+
   const [isOpen, setIsOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const profileMenuRef = useRef<HTMLElement>(null);
+  const { data: session, isPending } = authClient.useSession();
+  const user = session?.user;
+
+  const handleLogout = async () => {
+    try {
+      setLoggingOut(true);
+
+      const { error } = await authClient.signOut();
+
+      if (error) {
+        toast.error(error.message || "Unable to logout.");
+        return;
+      }
+
+      toast.success("Logged out successfully");
+      setIsOpen(false);
+      setProfileMenuOpen(false);
+      router.replace("/");
+      router.refresh();
+    } catch {
+      toast.error("Unable to logout. Please try again.");
+    } finally {
+      setLoggingOut(false);
+    }
+  };
 
   const isActive = (href: string) => {
     if (href === "/#how-it-works") return false;
     return pathname === href;
   };
 
+    useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, []);
+
+  const dashboardUrl =
+  session?.user?.role === "admin"
+    ? "/admin"
+    : session?.user?.role === "vendor"
+      ? "/vendor"
+      : "/customer";
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[#eee5db] bg-white">
+    <header
+      ref={profileMenuRef}
+      className="sticky top-0 z-50 w-full border-b border-[#eee5db] bg-white"
+    >
       <div className="mx-auto flex h-[72px] w-full max-w-[1440px] items-center justify-between px-4 sm:px-8 lg:px-12">
         <Link href="/" className="flex shrink-0 items-center gap-1">
           <Image
@@ -34,6 +99,7 @@ export default function Navbar() {
             width={40}
             height={40}
           />
+
           <span className="text-[25px] font-extrabold tracking-tight text-[#24211f]">
             Pizza<span className="text-[#e62e20]">Hub</span>
           </span>
@@ -56,19 +122,82 @@ export default function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <Link
-            href="/sign-in"
-            className="rounded-lg border border-[#e62e20] px-5 py-2.5 text-sm font-semibold text-[#e62e20] transition-colors hover:bg-[#fff1ed]"
-          >
-            Sign In
-          </Link>
+          {!isPending &&
+            (user ? (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 transition hover:bg-[#fff8f3]"
+                  aria-expanded={profileMenuOpen}
+                >
+                  <CircleUserRound
+                    size={25}
+                    className="text-[#e62e20]"
+                  />
 
-          <Link
-            href="/sign-up"
-            className="rounded-lg bg-[#e62e20] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#c9251a]"
-          >
-            Sign Up
-          </Link>
+                  <span className="max-w-[160px] truncate text-sm font-semibold text-[#292929]">
+                    {user.name}
+                  </span>
+
+                  <ChevronDown
+                    size={17}
+                    className={`text-[#777] transition-transform ${
+                      profileMenuOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {profileMenuOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-52 overflow-hidden rounded-xl border border-[#eee5db] bg-white py-2 shadow-lg">
+                    <Link
+                      href="/profile"
+                      onClick={() => setProfileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#292929] transition hover:bg-[#fff1ed] hover:text-[#e62e20]"
+                    >
+                      <CircleUserRound size={18} />
+                      Profile
+                    </Link>                    
+                    <Link
+                      href={dashboardUrl}
+                      onClick={() => setProfileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#292929] transition hover:bg-[#fff1ed] hover:text-[#e62e20]"
+                    >
+                      <LayoutDashboard size={18} />
+                      Dashboard
+                    </Link>
+
+                    <div className="mx-3 border-t border-[#eee5db]" />
+
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      disabled={loggingOut}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold text-[#e62e20] transition hover:bg-[#fff1ed] disabled:opacity-60"
+                    >
+                      <LogOut size={18} />
+                      {loggingOut ? "Logging out..." : "Logout"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/sign-in"
+                  className="rounded-lg border border-[#e62e20] px-5 py-2.5 text-sm font-semibold text-[#e62e20] transition-colors hover:bg-[#fff1ed]"
+                >
+                  Sign In
+                </Link>
+
+                <Link
+                  href="/sign-up"
+                  className="rounded-lg bg-[#e62e20] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#c9251a]"
+                >
+                  Sign Up
+                </Link>
+              </>
+            ))}
         </div>
 
         <button
@@ -101,23 +230,96 @@ export default function Navbar() {
             ))}
           </nav>
 
-          <div className="mt-4 flex gap-3">
-            <Link
-              href="/sign-in"
-              onClick={() => setIsOpen(false)}
-              className="flex-1 rounded-lg border border-[#e62e20] py-3 text-center text-sm font-semibold text-[#e62e20]"
-            >
-              Sign In
-            </Link>
+          {!isPending && (
+            <div className="mt-4 border-t border-[#eee5db] pt-4">
+              {user ? (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                    className="flex w-full items-center justify-between rounded-lg px-4 py-3 transition hover:bg-[#fff8f3]"
+                    aria-expanded={profileMenuOpen}
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      <CircleUserRound
+                        size={25}
+                        className="text-[#e62e20]"
+                      />
 
-            <Link
-              href="/sign-up"
-              onClick={() => setIsOpen(false)}
-              className="flex-1 rounded-lg bg-[#e62e20] py-3 text-center text-sm font-semibold text-white"
-            >
-              Sign Up
-            </Link>
-          </div>
+                      <span className="min-w-0 truncate text-sm font-semibold text-[#292929]">
+                        {user.name}
+                      </span>
+                    </span>
+
+                    <ChevronDown
+                      size={18}
+                      className={`text-[#777] transition-transform ${
+                        profileMenuOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {profileMenuOpen && (
+                    <div className="mt-2 overflow-hidden rounded-xl border border-[#eee5db] bg-white py-2">
+                      <Link
+                        href="/profile"
+                        onClick={() => {
+                          setIsOpen(false);
+                          setProfileMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#292929] transition hover:bg-[#fff1ed] hover:text-[#e62e20]"
+                      >
+                        <CircleUserRound size={18} />
+                        Profile
+                      </Link>
+
+                      <Link
+                        href="/dashboard"
+                        onClick={() => {
+                          setIsOpen(false);
+                          setProfileMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#292929] transition hover:bg-[#fff1ed] hover:text-[#e62e20]"
+                      >
+                        <LayoutDashboard size={18} />
+                        Dashboard
+                      </Link>
+
+                      <div className="mx-3 border-t border-[#eee5db]" />
+
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        disabled={loggingOut}
+                        className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold text-[#e62e20] transition hover:bg-[#fff1ed] disabled:opacity-60"
+                      >
+                        <LogOut size={18} />
+                        {loggingOut ? "Logging out..." : "Logout"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex gap-3">
+                  <Link
+                    href="/sign-in"
+                    onClick={() => setIsOpen(false)}
+                    className="flex-1 rounded-lg border border-[#e62e20] py-3 text-center text-sm font-semibold text-[#e62e20]"
+                  >
+                    Sign In
+                  </Link>
+
+                  <Link
+                    href="/sign-up"
+                    onClick={() => setIsOpen(false)}
+                    className="flex-1 rounded-lg bg-[#e62e20] py-3 text-center text-sm font-semibold text-white"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </header>
