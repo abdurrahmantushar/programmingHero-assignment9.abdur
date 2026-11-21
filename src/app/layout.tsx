@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "./components/shared/Navbar";
-import Footer from "./components/shared/Footer";
+import ConditionalLayout from "./components/shared/ConditionalLayout";
 import { Toaster } from "react-hot-toast";
 import { Suspense } from "react";
-
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,10 +33,9 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col">
         <Suspense fallback={null}>
-          <Navbar />
+          <ConditionalLayout>{children}</ConditionalLayout>
         </Suspense>
-        <main className="flex-1">{children}</main>
-        <Footer />
+
         <Toaster position="top-right" />
       </body>
     </html>

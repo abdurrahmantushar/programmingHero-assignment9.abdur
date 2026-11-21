@@ -1,5 +1,6 @@
 
 "use client";
+
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -14,22 +15,100 @@ import {
   X,
   LogOut,
   UserRound,
+  Utensils,
+  PlusCircle,
+  ClipboardList,
+  CreditCard,
+  Users,
+  Package,
+  Receipt,
 } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
-const navItems = [
-  { name: "Overview", href: "/customer", icon: LayoutDashboard },
-  { name: "My Orders", href: "/customer/orders", icon: ShoppingBag },
-  { name: "My Addresses", href: "/customer/addresses", icon: MapPin },
-  { name: "My Favorites", href: "/customer/favorites", icon: Heart },
-  { name: "Settings", href: "/customer/settings", icon: Settings },
-];
-function CustomerLayoutContent({
+const dashboardMenus = {
+  customer: {
+    title: "Customer Dashboard",
+    subtitle: "Manage your orders and account",
+    menuTitle: "Customer Menu",
+    buttonText: "Explore Menu",
+    menu: [
+      { name: "Overview", href: "/customer", icon: LayoutDashboard },
+      { name: "My Orders", href: "/customer/orders", icon: ShoppingBag },
+      { name: "My Addresses", href: "/customer/addresses", icon: MapPin },
+      { name: "My Favorites", href: "/customer/favorites", icon: Heart },
+      { name: "Settings", href: "/customer/settings", icon: Settings },
+    ],
+  },
+
+  vendor: {
+    title: "Vendor Dashboard",
+    subtitle: "Manage your restaurant and orders",
+    menuTitle: "Vendor Menu",
+    buttonText: "View Menu",
+    menu: [
+      { name: "Overview", href: "/vendor", icon: LayoutDashboard },
+      { name: "My Menu Items", href: "/vendor/menu", icon: Utensils },
+      { name: "Add Menu Item", href: "/vendor/menu/add", icon: PlusCircle },
+      { name: "Customer Orders", href: "/vendor/orders", icon: ClipboardList },
+      { name: "Subscription", href: "/vendor/subscription", icon: CreditCard },
+      { name: "Settings", href: "/vendor/settings", icon: Settings },
+    ],
+  },
+
+  admin: {
+    title: "Admin Dashboard",
+    subtitle: "Manage your PizzaHub platform",
+    menuTitle: "Admin Menu",
+    buttonText: "View Website",
+    menu: [
+      { name: "Overview", href: "/admin", icon: LayoutDashboard },
+      { name: "Manage Users", href: "/admin/users", icon: Users },
+      { name: "Manage Menu Items", href: "/admin/menu", icon: Package },
+      { name: "Transactions", href: "/admin/transactions", icon: Receipt },
+      { name: "Settings", href: "/admin/settings", icon: Settings },
+    ],
+  },
+};
+
+function DashboardLayoutContent({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const { data: session, isPending } = authClient.useSession();
+
+  const role = session?.user?.role as keyof typeof dashboardMenus | undefined;
+  const userName = session?.user?.name || "User";
+  const userImage = session?.user?.image;
+
+  if (isPending) {
+    return (
+      <div className="min-h-screen bg-[#fffaf5]">
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-orange-200 border-t-[#e62e20]" />
+        </div>
+        {children}
+      </div>
+    );
+  }
+
+  if (!role || !dashboardMenus[role]) {
+    return (
+      <div className="min-h-screen bg-[#fffaf5]">
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <p className="font-semibold text-gray-600">
+            Unable to load dashboard.
+          </p>
+        </div>
+        {children}
+      </div>
+    );
+  }
+
+  const config = dashboardMenus[role];
 
   return (
     <div className="min-h-screen bg-[#fffaf5] text-[#292524]">
@@ -65,26 +144,37 @@ function CustomerLayoutContent({
 
         <div className="border-b border-orange-100 px-6 py-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-[#e62e20]">
-              <UserRound size={25} />
-            </div>
-            <div>
-              <p className="font-bold">Customer</p>
-              <p className="text-xs text-gray-500">Customer Dashboard</p>
+            {userImage ? (
+              <img
+                src={userImage}
+                alt={userName}
+                className="h-12 w-12 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-[#e62e20]">
+                <UserRound size={25} />
+              </div>
+            )}
+
+            <div className="min-w-0">
+              <p className="truncate font-bold">{userName}</p>
+              <p className="text-xs capitalize text-gray-500">
+                {role} Dashboard
+              </p>
             </div>
           </div>
         </div>
 
         <nav className="flex-1 space-y-2 overflow-y-auto px-4 py-6">
           <p className="mb-4 px-3 text-xs font-bold uppercase tracking-widest text-gray-400">
-            Customer Menu
+            {config.menuTitle}
           </p>
 
-          {navItems.map((item) => {
+          {config.menu.map((item) => {
             const Icon = item.icon;
             const active =
               pathname === item.href ||
-              (item.href !== "/customer" &&
+              (item.href !== `/${role}` &&
                 pathname.startsWith(`${item.href}/`));
 
             return (
@@ -125,21 +215,22 @@ function CustomerLayoutContent({
             >
               <Menu size={23} />
             </button>
+
             <div>
               <h1 className="text-lg font-bold sm:text-xl">
-                Customer Dashboard
+                {config.title}
               </h1>
               <p className="hidden text-xs text-gray-500 sm:block">
-                Manage your orders and account
+                {config.subtitle}
               </p>
             </div>
           </div>
 
           <Link
-            href="/"
+            href="/menu"
             className="rounded-xl bg-[#e62e20] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#c92318]"
           >
-            Explore Menu
+            {config.buttonText}
           </Link>
         </header>
 
@@ -149,14 +240,14 @@ function CustomerLayoutContent({
   );
 }
 
-export default function CustomerLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
     <Suspense fallback={null}>
-      <CustomerLayoutContent>{children}</CustomerLayoutContent>
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
     </Suspense>
   );
 }

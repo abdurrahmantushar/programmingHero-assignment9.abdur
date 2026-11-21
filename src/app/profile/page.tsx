@@ -3,13 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     UserRound,
     ShoppingBag,
     MapPin,
-    Heart,
-    Settings,
     LogOut,
     Pencil,
     Mail,
@@ -17,52 +15,147 @@ import {
     CalendarDays,
     ChevronRight,
     Pizza,
-    CreditCard,
     ShieldCheck,
     Plus,
     Camera,
     Star,
+    Clock3,
+    CheckCircle2,
     type LucideIcon,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import toast from "react-hot-toast";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
 const menuItems = [
   { label: "My Profile", icon: UserRound, active: true },
 ];
 
-const orders = [
-  {
-    id: "#PH-10245",
-    name: "Chicken BBQ Pizza",
-    date: "Nov 18, 2026",
-    price: "৳650",
-    status: "Delivered",
-    color: "bg-green-100 text-green-700",
-  },
-  {
-    id: "#PH-10231",
-    name: "Farmhouse Delight",
-    date: "Nov 15, 2026",
-    price: "৳550",
-    status: "Delivered",
-    color: "bg-green-100 text-green-700",
-  },
-  {
-    id: "#PH-10198",
-    name: "Spicy Italian Pizza",
-    date: "Nov 10, 2026",
-    price: "৳600",
-    status: "Delivered",
-    color: "bg-green-100 text-green-700",
-  },
-];
+type Order = {
+  _id: string;
+  itemName: string;
+  totalPrice: number;
+  quantity: number;
+  status: string;
+  createdAt: string;
+};
+
+type DashboardData = {
+  totalOrders: number;
+  pendingOrders: number;
+  acceptedOrders: number;
+  recentOrders: Order[];
+};
+
+type Address = {
+  _id: string;
+  label: string;
+  fullName: string;
+  phone: string;
+  address: string;
+  city: string;
+  area: string;
+  postalCode: string;
+  isDefault: boolean;
+};
+
+const statusStyles: Record<string, string> = {
+  pending: "bg-orange-50 text-orange-600",
+  accepted: "bg-blue-50 text-blue-600",
+  rejected: "bg-red-50 text-red-600",
+  cancelled: "bg-gray-100 text-gray-600",
+};
 
 export default function ProfilePage() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
+  const customerId = user?.id;
+
   const [loggingOut, setLoggingOut] = useState(false);
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const profileImage = uploadedImage ?? user?.image ?? null;
+
+  useEffect(() => {
+    if (!customerId) return;
+
+    const loadProfileData = async () => {
+      try {
+        const [dashboardResponse, addressesResponse] = await Promise.all([
+          fetch(`${API_URL}/api/customer/${customerId}/dashboard`),
+          fetch(`${API_URL}/api/customer/${customerId}/addresses`),
+        ]);
+
+        const [dashboardResult, addressesResult] = await Promise.all([
+          dashboardResponse.json(),
+          addressesResponse.json(),
+        ]);
+
+        if (dashboardResponse.ok && dashboardResult.success) {
+          setDashboard(dashboardResult.data);
+        }
+
+        if (addressesResponse.ok && addressesResult.success) {
+          setAddresses(addressesResult.data || []);
+        }
+      } catch {
+        toast.error("Unable to load profile data.");
+      }
+    };
+
+    loadProfileData();
+  }, [customerId]);
+
+  const handleImageChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please choose an image file.");
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Please choose an image smaller than 2MB.");
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(new Error("Unable to read the image"));
+        reader.readAsDataURL(file);
+      });
+
+      // Uses the existing Better Auth endpoint: POST /api/auth/update-user
+      const { error } = await authClient.updateUser({ image: dataUrl });
+
+      if (error) {
+        toast.error(error.message || "Unable to update profile picture.");
+        return;
+      }
+
+      setUploadedImage(dataUrl);
+      toast.success("Profile picture updated");
+      router.refresh();
+    } catch {
+      toast.error("Unable to update profile picture.");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const name = user?.name?.trim() || "Pizza Lover";
   const email = user?.email || "Not available";
@@ -85,6 +178,34 @@ export default function ProfilePage() {
   const accountStatus = user?.emailVerified
     ? "Verified Account"
     : "Email Not Verified";
+
+  const defaultAddress =
+    addresses.find((address) => address.isDefault) ?? addresses[0];
+  const location = defaultAddress
+    ? [defaultAddress.area, defaultAddress.city, defaultAddress.postalCode]
+        .filter(Boolean)
+        .join(", ")
+    : "Not provided";
+
+  const stats = [
+    {
+      label: "Total Orders",
+      value: dashboard?.totalOrders ?? 0,
+      icon: ShoppingBag,
+    },
+    {
+      label: "Pending Orders",
+      value: dashboard?.pendingOrders ?? 0,
+      icon: Clock3,
+    },
+    {
+      label: "Accepted Orders",
+      value: dashboard?.acceptedOrders ?? 0,
+      icon: CheckCircle2,
+    },
+  ];
+
+  const recentOrders = dashboard?.recentOrders ?? [];
 
   const handleLogout = async () => {
     try {
@@ -157,10 +278,17 @@ export default function ProfilePage() {
         {/* Sidebar */}
         <aside className="h-fit rounded-2xl border border-orange-100 bg-white p-5 shadow-sm">
           <div className="flex flex-col items-center border-b border-gray-100 pb-6">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+            />
             <div className="relative">
-              {user.image ? (
+              {profileImage ? (
                 <Image
-                  src={user.image}
+                  src={profileImage}
                   alt={name}
                   width={96}
                   height={96}
@@ -175,7 +303,9 @@ export default function ProfilePage() {
               <button
                 type="button"
                 aria-label="Change profile picture"
-                className="absolute bottom-0 right-0 rounded-full bg-[#e52b19] p-2 text-white shadow-md transition hover:bg-red-700"
+                disabled={uploadingImage}
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute bottom-0 right-0 rounded-full bg-[#e52b19] p-2 text-white shadow-md transition hover:bg-red-700 disabled:opacity-60"
               >
                 <Camera size={15} />
               </button>
@@ -248,11 +378,7 @@ export default function ProfilePage() {
 
           {/* Stats */}
           <section className="grid grid-cols-2 gap-4 xl:grid-cols-3">
-            {[
-              { label: "Total Orders", value: "24", icon: ShoppingBag },
-              { label: "Favorites", value: "12", icon: Heart },
-              { label: "Reviews", value: "08", icon: Star },
-            ].map((stat) => {
+            {stats.map((stat) => {
               const Icon = stat.icon;
 
               return (
@@ -299,7 +425,7 @@ export default function ProfilePage() {
               <InfoItem
                 icon={Phone}
                 label="Phone Number"
-                value="Not provided"
+                value={defaultAddress?.phone || "Not provided"}
               />
               <InfoItem
                 icon={ShieldCheck}
@@ -307,11 +433,7 @@ export default function ProfilePage() {
                 value={role === "vendor" ? "Vendor" : "Customer"}
               />
               <InfoItem icon={CalendarDays} label="Member Since" value={joined} />
-              <InfoItem
-                icon={MapPin}
-                label="Location"
-                value="Not provided"
-              />
+              <InfoItem icon={MapPin} label="Location" value={location} />
               <InfoItem
                 icon={ShieldCheck}
                 label="Email Verification"
@@ -331,37 +453,61 @@ export default function ProfilePage() {
                   Manage your delivery locations.
                 </p>
               </div>
-              <button
-                type="button"
+              <Link
+                href="/customer/addresses"
                 className="flex items-center gap-1 text-sm font-bold text-[#e52b19] hover:text-red-700"
               >
                 <Plus size={18} />
                 Add New
-              </button>
+              </Link>
             </div>
 
-            <div className="flex flex-col gap-4 rounded-xl border border-orange-200 bg-orange-50/50 p-5 sm:flex-row sm:items-center">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-100 text-[#e52b19]">
-                <MapPin size={23} />
-              </div>
-              <div className="flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-bold text-gray-900">Home Address</h3>
-                  <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-bold text-green-700">
-                    Default
-                  </span>
+            {defaultAddress ? (
+              <div className="flex flex-col gap-4 rounded-xl border border-orange-200 bg-orange-50/50 p-5 sm:flex-row sm:items-center">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-100 text-[#e52b19]">
+                  <MapPin size={23} />
                 </div>
-                <p className="mt-2 text-sm leading-6 text-gray-500">
-                  No address saved yet. Add your delivery address to get started.
-                </p>
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="font-bold text-gray-900">
+                      {defaultAddress.label}
+                    </h3>
+                    {defaultAddress.isDefault && (
+                      <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-bold text-green-700">
+                        Default
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-gray-500">
+                    {defaultAddress.address}, {defaultAddress.area},{" "}
+                    {defaultAddress.city} - {defaultAddress.postalCode}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    {defaultAddress.fullName} · {defaultAddress.phone}
+                  </p>
+                </div>
+                <Link
+                  href="/customer/addresses"
+                  className="text-sm font-bold text-[#e52b19]"
+                >
+                  Edit
+                </Link>
               </div>
-              <button
-                type="button"
-                className="text-sm font-bold text-[#e52b19]"
-              >
-                Edit
-              </button>
-            </div>
+            ) : (
+              <div className="flex flex-col gap-4 rounded-xl border border-orange-200 bg-orange-50/50 p-5 sm:flex-row sm:items-center">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-100 text-[#e52b19]">
+                  <MapPin size={23} />
+                </div>
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="font-bold text-gray-900">Home Address</h3>
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-gray-500">
+                    No address saved yet. Add your delivery address to get started.
+                  </p>
+                </div>
+              </div>
+            )}
           </section>
 
           {/* Recent Orders */}
@@ -376,51 +522,75 @@ export default function ProfilePage() {
                 </p>
               </div>
               <Link
-                href="/profile"
+                href="/customer/orders"
                 className="text-sm font-bold text-[#e52b19] hover:underline"
               >
                 View All
               </Link>
             </div>
 
-            <div className="space-y-4">
-              {orders.map((order) => (
-                <div
-                  key={order.id}
-                  className="flex flex-col gap-4 rounded-xl border border-gray-100 p-4 transition hover:border-orange-200 hover:bg-orange-50/30 sm:flex-row sm:items-center"
+            {recentOrders.length === 0 ? (
+              <div className="py-10 text-center">
+                <ShoppingBag className="mx-auto text-gray-300" size={40} />
+                <p className="mt-3 font-semibold text-gray-700">No orders yet</p>
+                <Link
+                  href="/browse-menu"
+                  className="mt-3 inline-block text-sm font-bold text-[#e52b19]"
                 >
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-[#e52b19]">
-                    <Pizza size={25} />
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-bold text-gray-900">{order.name}</h3>
-                    <p className="mt-1 text-xs text-gray-500">
-                      {order.id} · {order.date}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-4 sm:justify-end">
-                    <div className="text-right">
-                      <p className="font-extrabold text-gray-900">
-                        {order.price}
-                      </p>
-                      <span
-                        className={`mt-1 inline-block rounded-full px-3 py-1 text-xs font-bold ${order.color}`}
-                      >
-                        {order.status}
-                      </span>
+                  Explore Menu
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentOrders.map((order) => (
+                  <div
+                    key={order._id}
+                    className="flex flex-col gap-4 rounded-xl border border-gray-100 p-4 transition hover:border-orange-200 hover:bg-orange-50/30 sm:flex-row sm:items-center"
+                  >
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-[#e52b19]">
+                      <Pizza size={25} />
                     </div>
-                    <button
-                      type="button"
-                      className="rounded-full border border-orange-200 p-2 text-[#e52b19] transition hover:bg-orange-100"
-                    >
-                      <ChevronRight size={18} />
-                    </button>
+
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-bold text-gray-900">
+                        {order.itemName}
+                      </h3>
+                      <p className="mt-1 text-xs text-gray-500">
+                        #{order._id.slice(-6)} ·{" "}
+                        {new Date(order.createdAt).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-4 sm:justify-end">
+                      <div className="text-right">
+                        <p className="font-extrabold text-gray-900">
+                          ৳{order.totalPrice}
+                        </p>
+                        <span
+                          className={`mt-1 inline-block rounded-full px-3 py-1 text-xs font-bold capitalize ${
+                            statusStyles[order.status] ||
+                            "bg-gray-100 text-gray-600"
+                          }`}
+                        >
+                          {order.status}
+                        </span>
+                      </div>
+                      <Link
+                        href={`/customer/orders/${order._id}`}
+                        className="rounded-full border border-orange-200 p-2 text-[#e52b19] transition hover:bg-orange-100"
+                        aria-label="View order details"
+                      >
+                        <ChevronRight size={18} />
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </section>
 
           {/* Account Security */}
