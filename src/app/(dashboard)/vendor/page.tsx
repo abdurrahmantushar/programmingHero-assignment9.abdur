@@ -2,419 +2,386 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
+  ArrowLeft,
+  ImagePlus,
+  X,
   UtensilsCrossed,
-  Clock3,
-  CheckCircle2,
-  XCircle,
-  ArrowUpRight,
-  ArrowRight,
-  ShoppingBag,
-  Pizza,
-  CalendarDays,
+  MapPin,
+  DollarSign,
   Package,
+  FileText,
+  Plus,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
-type Order = {
-  _id: string;
-  itemName: string;
-  price: number;
-  quantity: number;
-  totalPrice: number;
-  deliveryDate: string;
-  status: string;
-  createdAt: string;
-  customerName?: string;
-};
-
-type DashboardData = {
-  totalMenuItems: number;
-  pendingMenuItems: number;
-  approvedMenuItems: number;
-  rejectedMenuItems: number;
-  totalOrders: number;
-  pendingOrders: number;
-  acceptedOrders: number;
-  rejectedOrders: number;
-  recentOrders: Order[];
-};
-
-const statusStyles: Record<string, string> = {
-  pending: "bg-orange-50 text-orange-600",
-  accepted: "bg-blue-50 text-blue-600",
-  completed: "bg-green-50 text-green-600",
-  rejected: "bg-red-50 text-red-600",
-  cancelled: "bg-gray-100 text-gray-600",
-};
-
-export default function VendorDashboardPage() {
+export default function AddMenuItemPage() {
+  const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
 
-  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [images, setImages] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (isPending) return;
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const remaining = 8 - images.length;
 
-    if (!session?.user?.id) {
-      setLoading(false);
-      setError("Please sign in to view your dashboard.");
+    if (files.length > remaining) {
+      toast.error("You can upload a maximum of 8 images.");
+    }
+
+    const selectedFiles = files.slice(0, remaining);
+
+    const validFiles = selectedFiles.filter((file) =>
+      file.type.startsWith("image/")
+    );
+
+    const newPreviews = validFiles.map((file) =>
+      URL.createObjectURL(file)
+    );
+
+    setImages((prev) => [...prev, ...validFiles]);
+    setPreviews((prev) => [...prev, ...newPreviews]);
+
+    e.target.value = "";
+  };
+
+  const removeImage = (index: number) => {
+    URL.revokeObjectURL(previews[index]);
+
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    setPreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (isPending || !session?.user?.id) {
+      toast.error("Please sign in as a vendor.");
       return;
     }
 
-    const fetchDashboard = async () => {
-      try {
-        setLoading(true);
-        setError("");
+    if (images.length === 0) {
+      toast.error("Please upload at least one menu image.");
+      return;
+    }
 
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/dashboard`
-        );
+    const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
 
-        const result = await response.json();
+    if (!apiKey) {
+      toast.error("ImgBB API key is missing.");
+      return;
+    }
 
-        if (!response.ok || !result.success) {
-          throw new Error(
-            result.message || "Failed to load dashboard"
+    try {
+      setSubmitting(true);
+
+      const formData = new FormData(e.currentTarget);
+
+      const imageUrls = await Promise.all(
+        images.map(async (image) => {
+          const uploadData = new FormData();
+          uploadData.append("image", image);
+
+          const uploadResponse = await fetch(
+            `https://api.imgbb.com/1/upload?key=${apiKey}`,
+            {
+              method: "POST",
+              body: uploadData,
+            }
           );
+
+          const uploadResult = await uploadResponse.json();
+
+          if (!uploadResponse.ok || !uploadResult.success) {
+            throw new Error("Image upload failed.");
+          }
+
+          return uploadResult.data.url;
+        })
+      );
+
+      const menuData = {
+        itemName: String(formData.get("itemName") || ""),
+        category: String(formData.get("category") || ""),
+        description: String(formData.get("description") || ""),
+        price: Number(formData.get("price")),
+        quantity: Number(formData.get("quantity")),
+        location: String(formData.get("location") || ""),
+        images: imageUrls,
+      };
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/menu-items`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(menuData),
         }
+      );
 
-        setDashboard(result.data);
-      } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Something went wrong"
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.message || "Failed to create menu item."
         );
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchDashboard();
-  }, [session?.user?.id, isPending]);
+      toast.success("Menu item created successfully!");
 
-  const stats = [
-    {
-      title: "Total Menu Items",
-      value: dashboard?.totalMenuItems ?? 0,
-      description: "All your menu items",
-      icon: UtensilsCrossed,
-      color: "bg-blue-50 text-blue-600",
-    },
-    {
-      title: "Pending Menu Items",
-      value: dashboard?.pendingMenuItems ?? 0,
-      description: "Waiting for approval",
-      icon: Clock3,
-      color: "bg-orange-50 text-orange-600",
-    },
-    {
-      title: "Total Orders",
-      value: dashboard?.totalOrders ?? 0,
-      description: "All customer orders",
-      icon: ShoppingBag,
-      color: "bg-purple-50 text-purple-600",
-    },
-    {
-      title: "Pending Orders",
-      value: dashboard?.pendingOrders ?? 0,
-      description: "Waiting for confirmation",
-      icon: Clock3,
-      color: "bg-yellow-50 text-yellow-600",
-    },
-    {
-      title: "Accepted Orders",
-      value: dashboard?.acceptedOrders ?? 0,
-      description: "Orders accepted by you",
-      icon: CheckCircle2,
-      color: "bg-green-50 text-green-600",
-    },
-  ];
-
-  if (loading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="text-center">
-          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-orange-100 border-t-[#e62e20]" />
-          <p className="mt-4 text-sm font-medium text-gray-500">
-            Loading your dashboard...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="max-w-md rounded-2xl border border-red-100 bg-white p-8 text-center">
-          <XCircle className="mx-auto text-red-500" size={40} />
-          <h2 className="mt-4 text-xl font-bold text-gray-900">
-            Unable to Load Dashboard
-          </h2>
-          <p className="mt-2 text-sm text-gray-500">{error}</p>
-        </div>
-      </div>
-    );
-  }
+      router.push("/vendor/menu");
+      router.refresh();
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8">
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#e62e20] to-[#f15b35] p-6 text-white shadow-lg sm:p-9">
-        <div className="relative z-10 max-w-2xl">
-          <p className="mb-3 text-sm font-medium text-white/80">
-            VENDOR DASHBOARD
-          </p>
+    <div className="mx-auto max-w-5xl space-y-7">
+      <div>
+        <Link
+          href="/vendor/menu"
+          className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-gray-500 transition hover:text-[#e62e20]"
+        >
+          <ArrowLeft size={18} />
+          Back to My Menu
+        </Link>
 
-          <h2 className="text-2xl font-extrabold leading-tight sm:text-3xl lg:text-4xl">
-            Welcome back, {session?.user?.name || "Vendor"}!
-          </h2>
-
-          <p className="mt-3 max-w-lg text-sm leading-6 text-white/85 sm:text-base">
-            Manage your restaurant, organize your menu, and keep track
-            of your customer orders with PizzaHub.
-          </p>
-
-          <Link
-            href="/vendor/menu/add"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-[#e62e20] transition hover:bg-orange-50"
-          >
-            Add Menu Item
-            <ArrowUpRight size={18} />
-          </Link>
-        </div>
-
-        <UtensilsCrossed
-          size={190}
-          className="absolute -right-8 -bottom-12 hidden rotate-12 text-white/15 sm:block"
-        />
-      </section>
-
-      <section>
-        <div className="mb-5">
-          <h2 className="text-xl font-extrabold text-gray-900">
-            Business Overview
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Here is a summary of your restaurant activity.
+        <div>
+          <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">
+            Add New Menu Item
+          </h1>
+          <p className="mt-2 text-sm text-gray-500">
+            Add delicious items to your restaurant menu and let customers
+            discover them on PizzaHub.
           </p>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {stats.map((stat) => {
-            const Icon = stat.icon;
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <section className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm sm:p-7">
+          <div className="mb-6 flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-[#e62e20]">
+              <UtensilsCrossed size={22} />
+            </div>
 
-            return (
-              <div
-                key={stat.title}
-                className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-              >
-                <div className="flex items-center justify-between">
-                  <div
-                    className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.color}`}
-                  >
-                    <Icon size={23} />
-                  </div>
-
-                  <ArrowUpRight size={18} className="text-gray-300" />
-                </div>
-
-                <h3 className="mt-5 text-3xl font-extrabold text-gray-900">
-                  {stat.value}
-                </h3>
-
-                <p className="mt-1 font-semibold text-gray-700">
-                  {stat.title}
-                </p>
-
-                <p className="mt-1 text-xs text-gray-400">
-                  {stat.description}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <div className="overflow-hidden rounded-2xl border border-orange-100 bg-white xl:col-span-2">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-orange-100 p-5 sm:px-6">
             <div>
-              <h2 className="text-lg font-extrabold text-gray-900">
-                Recent Customer Orders
+              <h2 className="font-bold text-gray-900">
+                Basic Information
               </h2>
-              <p className="mt-1 text-xs text-gray-500">
-                Your latest restaurant orders
+              <p className="text-xs text-gray-500">
+                Provide details about your menu item
               </p>
             </div>
-
-            <Link
-              href="/vendor/orders"
-              className="inline-flex items-center gap-2 text-sm font-bold text-[#e62e20] hover:underline"
-            >
-              View All
-              <ArrowRight size={16} />
-            </Link>
           </div>
 
-          {!dashboard?.recentOrders.length ? (
-            <div className="p-10 text-center">
-              <ShoppingBag className="mx-auto text-gray-300" size={40} />
-              <p className="mt-3 font-semibold text-gray-700">
-                No orders yet
-              </p>
-              <p className="mt-1 text-sm text-gray-500">
-                Customer orders will appear here.
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <label className="mb-2 block text-sm font-semibold text-gray-700">
+                Item Name *
+              </label>
+              <input
+                type="text"
+                name="itemName"
+                required
+                placeholder="e.g. Margherita Pizza"
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-[#e62e20] focus:ring-2 focus:ring-orange-100"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-gray-700">
+                Category *
+              </label>
+              <select
+                name="category"
+                required
+                defaultValue=""
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#e62e20] focus:ring-2 focus:ring-orange-100"
+              >
+                <option value="" disabled>
+                  Select category
+                </option>
+                <option value="Veg">Veg</option>
+                <option value="Non-Veg">Non-Veg</option>
+                <option value="Special">Special</option>
+                <option value="Dessert">Dessert</option>
+                <option value="Drinks">Drinks</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-gray-700">
+                Price (৳) *
+              </label>
+              <div className="relative">
+                <DollarSign
+                  size={17}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+                <input
+                  type="number"
+                  name="price"
+                  required
+                  min="1"
+                  placeholder="299"
+                  className="w-full rounded-xl border border-gray-200 py-3 pl-11 pr-4 text-sm outline-none transition focus:border-[#e62e20] focus:ring-2 focus:ring-orange-100"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-gray-700">
+                Available Quantity *
+              </label>
+              <div className="relative">
+                <Package
+                  size={17}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+                <input
+                  type="number"
+                  name="quantity"
+                  required
+                  min="0"
+                  placeholder="20"
+                  className="w-full rounded-xl border border-gray-200 py-3 pl-11 pr-4 text-sm outline-none transition focus:border-[#e62e20] focus:ring-2 focus:ring-orange-100"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-gray-700">
+                Location *
+              </label>
+              <div className="relative">
+                <MapPin
+                  size={17}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+                <input
+                  type="text"
+                  name="location"
+                  required
+                  placeholder="e.g. Panchlaish, Chattogram"
+                  className="w-full rounded-xl border border-gray-200 py-3 pl-11 pr-4 text-sm outline-none transition focus:border-[#e62e20] focus:ring-2 focus:ring-orange-100"
+                />
+              </div>
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="mb-2 block text-sm font-semibold text-gray-700">
+                Description *
+              </label>
+              <div className="relative">
+                <FileText
+                  size={17}
+                  className="absolute left-4 top-4 text-gray-400"
+                />
+                <textarea
+                  name="description"
+                  required
+                  rows={5}
+                  placeholder="Describe your delicious menu item..."
+                  className="w-full resize-none rounded-xl border border-gray-200 py-3 pl-11 pr-4 text-sm outline-none transition focus:border-[#e62e20] focus:ring-2 focus:ring-orange-100"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm sm:p-7">
+          <div className="mb-6 flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-[#e62e20]">
+              <ImagePlus size={22} />
+            </div>
+
+            <div>
+              <h2 className="font-bold text-gray-900">Item Images</h2>
+              <p className="text-xs text-gray-500">
+                Upload up to 8 images of your menu item
               </p>
             </div>
-          ) : (
-            <div className="divide-y divide-orange-50">
-              {dashboard.recentOrders.map((order) => (
-                <div
-                  key={order._id}
-                  className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {previews.map((preview, index) => (
+              <div
+                key={preview}
+                className="group relative aspect-square overflow-hidden rounded-xl border border-gray-200"
+              >
+                <img
+                  src={preview}
+                  alt={`Menu item preview ${index + 1}`}
+                  className="h-full w-full object-cover"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => removeImage(index)}
+                  className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-red-600"
+                  aria-label="Remove image"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#e62e20]">
-                      <Pizza size={30} />
-                    </div>
+                  <X size={17} />
+                </button>
+              </div>
+            ))}
 
-                    <div>
-                      <h3 className="font-bold text-gray-900">
-                        {order.itemName}
-                      </h3>
-
-                      <p className="mt-1 text-xs text-gray-500">
-                        Order #{order._id.slice(-8)}
-                      </p>
-
-                      <p className="mt-1 text-xs text-gray-400">
-                        Customer: {order.customerName || "Customer"}
-                      </p>
-
-                      <p className="mt-1 text-xs text-gray-400">
-                        Qty {order.quantity} ·{" "}
-                        {new Date(order.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-4 sm:justify-end">
-                    <div className="sm:text-right">
-                      <p className="font-extrabold text-gray-900">
-                        ৳{order.totalPrice}
-                      </p>
-
-                      <span
-                        className={`mt-1 inline-block rounded-full px-3 py-1 text-xs font-bold capitalize ${
-                          statusStyles[order.status] ||
-                          "bg-gray-100 text-gray-600"
-                        }`}
-                      >
-                        {order.status}
-                      </span>
-                    </div>
-
-                    <Link
-                      href="/vendor/orders"
-                      className="rounded-lg border border-orange-200 p-2 text-gray-500 transition hover:border-[#e62e20] hover:text-[#e62e20]"
-                      aria-label="View customer orders"
-                    >
-                      <ArrowUpRight size={18} />
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-5">
-          <div className="rounded-2xl border border-orange-100 bg-white p-5 sm:p-6">
-            <h2 className="text-lg font-extrabold text-gray-900">
-              Quick Actions
-            </h2>
-
-            <div className="mt-5 space-y-3">
-              <Link
-                href="/vendor/menu/add"
-                className="flex items-center gap-3 rounded-xl bg-orange-50 p-4 transition hover:bg-orange-100"
-              >
-                <PlusIcon />
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-gray-800">
-                    Add Menu Item
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Add a new item to your menu
-                  </p>
-                </div>
-                <ArrowRight size={17} className="text-gray-400" />
-              </Link>
-
-              <Link
-                href="/vendor/menu"
-                className="flex items-center gap-3 rounded-xl bg-orange-50 p-4 transition hover:bg-orange-100"
-              >
-                <UtensilsCrossed className="text-[#e62e20]" size={22} />
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-gray-800">
-                    My Menu Items
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Manage your restaurant menu
-                  </p>
-                </div>
-                <ArrowRight size={17} className="text-gray-400" />
-              </Link>
-
-              <Link
-                href="/vendor/orders"
-                className="flex items-center gap-3 rounded-xl bg-orange-50 p-4 transition hover:bg-orange-100"
-              >
-                <ShoppingBag className="text-[#e62e20]" size={22} />
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-gray-800">
-                    Customer Orders
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Review and manage orders
-                  </p>
-                </div>
-                <ArrowRight size={17} className="text-gray-400" />
-              </Link>
-            </div>
+            {images.length < 8 && (
+              <label className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-orange-200 bg-orange-50/50 text-center transition hover:border-[#e62e20] hover:bg-orange-50">
+                <Plus size={30} className="text-[#e62e20]" />
+                <span className="mt-2 text-sm font-bold text-gray-700">
+                  Add Image
+                </span>
+                <span className="mt-1 text-xs text-gray-400">
+                  {images.length}/8 selected
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </label>
+            )}
           </div>
 
-          <div className="rounded-2xl border border-dashed border-orange-200 bg-orange-50/60 p-5">
-            <div className="flex items-center gap-2 text-[#e62e20]">
-              <CalendarDays size={19} />
-              <h3 className="font-bold">Grow Your Restaurant</h3>
-            </div>
+          <p className="mt-4 text-xs text-gray-400">
+            You can upload a maximum of 8 images.
+          </p>
+        </section>
 
-            <p className="mt-2 text-sm leading-6 text-gray-600">
-              Keep your menu updated and manage customer orders to
-              grow your business with PizzaHub.
-            </p>
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Link
+            href="/vendor/menu"
+            className="rounded-xl border border-gray-200 px-6 py-3 text-center text-sm font-bold text-gray-600 transition hover:bg-gray-50"
+          >
+            Cancel
+          </Link>
 
-            <Link
-              href="/vendor/subscription"
-              className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-[#e62e20] hover:underline"
-            >
-              View Subscription
-              <ArrowRight size={17} />
-            </Link>
-          </div>
+          <button
+            type="submit"
+            disabled={submitting || isPending}
+            className="rounded-xl bg-[#e62e20] px-8 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#c92318] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {submitting ? "Creating Menu Item..." : "Create Menu Item"}
+          </button>
         </div>
-      </section>
+      </form>
     </div>
   );
-}
-
-function PlusIcon() {
-  return <Package className="text-[#e62e20]" size={22} />;
 }

@@ -110,6 +110,14 @@ function DashboardLayoutContent({
 
   const config = dashboardMenus[role];
 
+  const activeHref = [...config.menu]
+    .sort((a, b) => b.href.length - a.href.length)
+    .find(
+      (item) =>
+        pathname === item.href ||
+        (item.href !== `/${role}` && pathname.startsWith(`${item.href}/`))
+    )?.href;
+
   return (
     <div className="min-h-screen bg-[#fffaf5] text-[#292524]">
       {sidebarOpen && (
@@ -172,10 +180,7 @@ function DashboardLayoutContent({
 
           {config.menu.map((item) => {
             const Icon = item.icon;
-            const active =
-              pathname === item.href ||
-              (item.href !== `/${role}` &&
-                pathname.startsWith(`${item.href}/`));
+            const active = activeHref === item.href;
 
             return (
               <Link
