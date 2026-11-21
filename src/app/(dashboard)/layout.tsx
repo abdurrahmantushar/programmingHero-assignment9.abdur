@@ -30,7 +30,6 @@ const dashboardMenus = {
     title: "Customer Dashboard",
     subtitle: "Manage your orders and account",
     menuTitle: "Customer Menu",
-    buttonText: "Explore Menu",
     menu: [
       { name: "Overview", href: "/customer", icon: LayoutDashboard },
       { name: "My Orders", href: "/customer/orders", icon: ShoppingBag },
@@ -44,7 +43,6 @@ const dashboardMenus = {
     title: "Vendor Dashboard",
     subtitle: "Manage your restaurant and orders",
     menuTitle: "Vendor Menu",
-    buttonText: "View Menu",
     menu: [
       { name: "Overview", href: "/vendor", icon: LayoutDashboard },
       { name: "My Menu Items", href: "/vendor/menu", icon: Utensils },
@@ -59,7 +57,6 @@ const dashboardMenus = {
     title: "Admin Dashboard",
     subtitle: "Manage your PizzaHub platform",
     menuTitle: "Admin Menu",
-    buttonText: "View Website",
     menu: [
       { name: "Overview", href: "/admin", icon: LayoutDashboard },
       { name: "Manage Users", href: "/admin/users", icon: Users },
@@ -231,12 +228,6 @@ function DashboardLayoutContent({
             </div>
           </div>
 
-          <Link
-            href="/menu"
-            className="rounded-xl bg-[#e62e20] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#c92318]"
-          >
-            {config.buttonText}
-          </Link>
         </header>
 
         <main className="p-5 sm:p-8">{children}</main>

@@ -39,6 +39,7 @@ type Order = {
   quantity: number;
   status: string;
   createdAt: string;
+  customerName?: string;
 };
 
 type DashboardData = {
@@ -46,6 +47,34 @@ type DashboardData = {
   pendingOrders: number;
   acceptedOrders: number;
   recentOrders: Order[];
+};
+
+type VendorDashboardData = {
+  totalMenuItems: number;
+  pendingMenuItems: number;
+  approvedMenuItems: number;
+  rejectedMenuItems: number;
+  totalOrders: number;
+  pendingOrders: number;
+  acceptedOrders: number;
+  rejectedOrders: number;
+  recentOrders: Order[];
+};
+
+type VendorSubscription = {
+  subscriptionPlan: "free" | "premium";
+  subscriptionExpiresAt: string | null;
+  totalMenuItems: number;
+  menuLimit: number | null;
+  remainingMenuItems: number | null;
+};
+
+type VendorMenuItem = {
+  _id: string;
+  itemName: string;
+  price: number;
+  status: string;
+  location?: string;
 };
 
 type Address = {
@@ -63,6 +92,7 @@ type Address = {
 const statusStyles: Record<string, string> = {
   pending: "bg-orange-50 text-orange-600",
   accepted: "bg-blue-50 text-blue-600",
+  approved: "bg-green-50 text-green-600",
   rejected: "bg-red-50 text-red-600",
   cancelled: "bg-gray-100 text-gray-600",
 };
@@ -71,37 +101,74 @@ export default function ProfilePage() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
-  const customerId = user?.id;
+  const userId = user?.id;
+  const role = String(user?.role ?? "customer");
+  const isVendor = role === "vendor";
+  const isAdmin = role === "admin";
 
   const [loggingOut, setLoggingOut] = useState(false);
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
+  const [vendorDashboard, setVendorDashboard] =
+    useState<VendorDashboardData | null>(null);
+  const [subscription, setSubscription] = useState<VendorSubscription | null>(
+    null
+  );
+  const [vendorMenuItems, setVendorMenuItems] = useState<VendorMenuItem[]>([]);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const profileImage = uploadedImage ?? user?.image ?? null;
 
   useEffect(() => {
-    if (!customerId) return;
+    if (!userId) return;
 
     const loadProfileData = async () => {
       try {
-        const [dashboardResponse, addressesResponse] = await Promise.all([
-          fetch(`${API_URL}/api/customer/${customerId}/dashboard`),
-          fetch(`${API_URL}/api/customer/${customerId}/addresses`),
-        ]);
+        if (isVendor) {
+          const [dashboardResponse, subscriptionResponse, menuResponse] =
+            await Promise.all([
+              fetch(`${API_URL}/api/vendor/${userId}/dashboard`),
+              fetch(`${API_URL}/api/vendor/${userId}/subscription`),
+              fetch(`${API_URL}/api/vendor/${userId}/menu-items`),
+            ]);
 
-        const [dashboardResult, addressesResult] = await Promise.all([
-          dashboardResponse.json(),
-          addressesResponse.json(),
-        ]);
+          const [dashboardResult, subscriptionResult, menuResult] =
+            await Promise.all([
+              dashboardResponse.json(),
+              subscriptionResponse.json(),
+              menuResponse.json(),
+            ]);
 
-        if (dashboardResponse.ok && dashboardResult.success) {
-          setDashboard(dashboardResult.data);
-        }
+          if (dashboardResponse.ok && dashboardResult.success) {
+            setVendorDashboard(dashboardResult.data);
+          }
 
-        if (addressesResponse.ok && addressesResult.success) {
-          setAddresses(addressesResult.data || []);
+          if (subscriptionResponse.ok && subscriptionResult.success) {
+            setSubscription(subscriptionResult.data);
+          }
+
+          if (menuResponse.ok && menuResult.success) {
+            setVendorMenuItems(menuResult.data || []);
+          }
+        } else if (!isAdmin) {
+          const [dashboardResponse, addressesResponse] = await Promise.all([
+            fetch(`${API_URL}/api/customer/${userId}/dashboard`),
+            fetch(`${API_URL}/api/customer/${userId}/addresses`),
+          ]);
+
+          const [dashboardResult, addressesResult] = await Promise.all([
+            dashboardResponse.json(),
+            addressesResponse.json(),
+          ]);
+
+          if (dashboardResponse.ok && dashboardResult.success) {
+            setDashboard(dashboardResult.data);
+          }
+
+          if (addressesResponse.ok && addressesResult.success) {
+            setAddresses(addressesResult.data || []);
+          }
         }
       } catch {
         toast.error("Unable to load profile data.");
@@ -109,7 +176,7 @@ export default function ProfilePage() {
     };
 
     loadProfileData();
-  }, [customerId]);
+  }, [userId, isVendor, isAdmin]);
 
   const handleImageChange = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -167,7 +234,12 @@ export default function ProfilePage() {
       .slice(0, 2)
       .map((part) => part[0].toUpperCase())
       .join("") || "PL";
-  const role = user?.role ?? "customer";
+  const roleLabel = isVendor
+    ? "Vendor Partner"
+    : isAdmin
+      ? "Administrator"
+      : "Pizza Lover";
+  const accountRole = isVendor ? "Vendor" : isAdmin ? "Admin" : "Customer";
   const joined = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString("en-GB", {
         day: "numeric",
@@ -181,31 +253,55 @@ export default function ProfilePage() {
 
   const defaultAddress =
     addresses.find((address) => address.isDefault) ?? addresses[0];
-  const location = defaultAddress
-    ? [defaultAddress.area, defaultAddress.city, defaultAddress.postalCode]
-        .filter(Boolean)
-        .join(", ")
-    : "Not provided";
+  const location = isVendor
+    ? vendorMenuItems[0]?.location || "Not provided"
+    : defaultAddress
+      ? [defaultAddress.area, defaultAddress.city, defaultAddress.postalCode]
+          .filter(Boolean)
+          .join(", ")
+      : "Not provided";
 
-  const stats = [
-    {
-      label: "Total Orders",
-      value: dashboard?.totalOrders ?? 0,
-      icon: ShoppingBag,
-    },
-    {
-      label: "Pending Orders",
-      value: dashboard?.pendingOrders ?? 0,
-      icon: Clock3,
-    },
-    {
-      label: "Accepted Orders",
-      value: dashboard?.acceptedOrders ?? 0,
-      icon: CheckCircle2,
-    },
-  ];
+  const stats = isVendor
+    ? [
+        {
+          label: "Total Menu Items",
+          value: vendorDashboard?.totalMenuItems ?? 0,
+          icon: Pizza,
+        },
+        {
+          label: "Total Orders",
+          value: vendorDashboard?.totalOrders ?? 0,
+          icon: ShoppingBag,
+        },
+        {
+          label: "Pending Orders",
+          value: vendorDashboard?.pendingOrders ?? 0,
+          icon: Clock3,
+        },
+      ]
+    : [
+        {
+          label: "Total Orders",
+          value: dashboard?.totalOrders ?? 0,
+          icon: ShoppingBag,
+        },
+        {
+          label: "Pending Orders",
+          value: dashboard?.pendingOrders ?? 0,
+          icon: Clock3,
+        },
+        {
+          label: "Accepted Orders",
+          value: dashboard?.acceptedOrders ?? 0,
+          icon: CheckCircle2,
+        },
+      ];
 
-  const recentOrders = dashboard?.recentOrders ?? [];
+  const recentOrders = isVendor
+    ? (vendorDashboard?.recentOrders ?? [])
+    : (dashboard?.recentOrders ?? []);
+
+  const ordersHref = isVendor ? "/vendor/orders" : "/customer/orders";
 
   const handleLogout = async () => {
     try {
@@ -315,7 +411,7 @@ export default function ProfilePage() {
             <p className="mt-1 text-sm text-gray-500">{email}</p>
             <span className="mt-3 rounded-full bg-orange-50 px-4 py-1 text-xs font-bold text-[#e52b19]">
               <Star size={12} className="mr-1 inline" />
-              {role === "vendor" ? "Vendor Partner" : "Pizza Lover"}
+              {roleLabel}
             </span>
           </div>
 
@@ -366,8 +462,11 @@ export default function ProfilePage() {
                 Hello, {firstName}! 👋
               </h2>
               <p className="mt-2 text-sm leading-6 text-white/90">
-                Your favorite pizzas are just a few clicks away.
-                Check your orders and enjoy something delicious!
+                {isVendor
+                  ? "Manage your menu, customer orders and subscription from one place."
+                  : isAdmin
+                    ? "Manage users, menu approvals and platform activity from one place."
+                    : "Your favorite pizzas are just a few clicks away. Check your orders and enjoy something delicious!"}
               </p>
             </div>
             <Pizza
@@ -377,26 +476,183 @@ export default function ProfilePage() {
           </section>
 
           {/* Stats */}
-          <section className="grid grid-cols-2 gap-4 xl:grid-cols-3">
-            {stats.map((stat) => {
-              const Icon = stat.icon;
+          {!isAdmin && (
+            <section className="grid grid-cols-2 gap-4 xl:grid-cols-3">
+              {stats.map((stat) => {
+                const Icon = stat.icon;
 
-              return (
-                <div
-                  key={stat.label}
-                  className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-                >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-[#e52b19]">
-                    <Icon size={22} />
+                return (
+                  <div
+                    key={stat.label}
+                    className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+                  >
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-[#e52b19]">
+                      <Icon size={22} />
+                    </div>
+                    <h3 className="mt-4 text-2xl font-extrabold text-gray-900">
+                      {stat.value}
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-500">{stat.label}</p>
                   </div>
-                  <h3 className="mt-4 text-2xl font-extrabold text-gray-900">
-                    {stat.value}
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-500">{stat.label}</p>
+                );
+              })}
+            </section>
+          )}
+
+          {/* Vendor Subscription */}
+          {isVendor && (
+            <section className="rounded-2xl border border-orange-100 bg-white p-6 shadow-sm sm:p-7">
+              <div className="mb-5 flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-extrabold text-gray-900">
+                    Subscription
+                  </h2>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Your current vendor plan and menu limits.
+                  </p>
                 </div>
-              );
-            })}
-          </section>
+                <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-bold capitalize text-[#e52b19]">
+                  {subscription?.subscriptionPlan ?? "free"}
+                </span>
+              </div>
+
+              <div className="grid gap-6 sm:grid-cols-3">
+                <InfoItem
+                  icon={Star}
+                  label="Current Plan"
+                  value={
+                    subscription?.subscriptionPlan === "premium"
+                      ? "Premium"
+                      : "Free"
+                  }
+                />
+                <InfoItem
+                  icon={ShoppingBag}
+                  label="Menu Items"
+                  value={
+                    subscription
+                      ? `${subscription.totalMenuItems} / ${subscription.menuLimit ?? "Unlimited"}`
+                      : "Not available"
+                  }
+                />
+                <InfoItem
+                  icon={CalendarDays}
+                  label="Expires"
+                  value={
+                    subscription?.subscriptionExpiresAt
+                      ? new Date(
+                          subscription.subscriptionExpiresAt
+                        ).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })
+                      : "No expiry"
+                  }
+                />
+              </div>
+            </section>
+          )}
+
+          {/* Vendor Menu Overview */}
+          {isVendor && (
+            <section className="rounded-2xl border border-orange-100 bg-white p-6 shadow-sm sm:p-7">
+              <div className="mb-5 flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-extrabold text-gray-900">
+                    My Menu Items
+                  </h2>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Your latest menu submissions.
+                  </p>
+                </div>
+                <Link
+                  href="/vendor/menu"
+                  className="text-sm font-bold text-[#e52b19] hover:underline"
+                >
+                  View All
+                </Link>
+              </div>
+
+              {vendorMenuItems.length === 0 ? (
+                <div className="py-8 text-center">
+                  <Pizza className="mx-auto text-gray-300" size={36} />
+                  <p className="mt-3 font-semibold text-gray-700">
+                    No menu items yet
+                  </p>
+                  <Link
+                    href="/vendor/menu/add"
+                    className="mt-2 inline-block text-sm font-bold text-[#e52b19]"
+                  >
+                    Add Menu Item
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {vendorMenuItems.slice(0, 3).map((item) => (
+                    <div
+                      key={item._id}
+                      className="flex items-center gap-4 rounded-xl border border-gray-100 p-4"
+                    >
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-[#e52b19]">
+                        <Pizza size={22} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="truncate font-bold text-gray-900">
+                          {item.itemName}
+                        </h3>
+                        <p className="mt-1 text-xs text-gray-500">
+                          ৳{item.price}
+                        </p>
+                      </div>
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-bold capitalize ${
+                          statusStyles[item.status] || "bg-gray-100 text-gray-600"
+                        }`}
+                      >
+                        {item.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* Admin Shortcuts */}
+          {isAdmin && (
+            <section className="rounded-2xl border border-orange-100 bg-white p-6 shadow-sm sm:p-7">
+              <h2 className="text-xl font-extrabold text-gray-900">
+                Admin Shortcuts
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Quick access to platform management.
+              </p>
+              <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                <Link
+                  href="/admin/users"
+                  className="flex items-center gap-3 rounded-xl border border-orange-100 bg-orange-50/50 p-4 text-sm font-bold text-gray-800 transition hover:border-[#e52b19] hover:text-[#e52b19]"
+                >
+                  <UserRound size={20} className="text-[#e52b19]" />
+                  Manage Users
+                </Link>
+                <Link
+                  href="/admin/menu"
+                  className="flex items-center gap-3 rounded-xl border border-orange-100 bg-orange-50/50 p-4 text-sm font-bold text-gray-800 transition hover:border-[#e52b19] hover:text-[#e52b19]"
+                >
+                  <Pizza size={20} className="text-[#e52b19]" />
+                  Manage Menu Items
+                </Link>
+                <Link
+                  href="/admin/transactions"
+                  className="flex items-center gap-3 rounded-xl border border-orange-100 bg-orange-50/50 p-4 text-sm font-bold text-gray-800 transition hover:border-[#e52b19] hover:text-[#e52b19]"
+                >
+                  <ShoppingBag size={20} className="text-[#e52b19]" />
+                  Transactions
+                </Link>
+              </div>
+            </section>
+          )}
 
           {/* Personal Information */}
           <section className="rounded-2xl border border-orange-100 bg-white p-6 shadow-sm sm:p-7">
@@ -430,7 +686,7 @@ export default function ProfilePage() {
               <InfoItem
                 icon={ShieldCheck}
                 label="Account Role"
-                value={role === "vendor" ? "Vendor" : "Customer"}
+                value={accountRole}
               />
               <InfoItem icon={CalendarDays} label="Member Since" value={joined} />
               <InfoItem icon={MapPin} label="Location" value={location} />
@@ -443,6 +699,7 @@ export default function ProfilePage() {
           </section>
 
           {/* Address */}
+          {!isVendor && !isAdmin && (
           <section className="rounded-2xl border border-orange-100 bg-white p-6 shadow-sm sm:p-7">
             <div className="mb-5 flex items-center justify-between">
               <div>
@@ -509,8 +766,10 @@ export default function ProfilePage() {
               </div>
             )}
           </section>
+          )}
 
           {/* Recent Orders */}
+          {!isAdmin && (
           <section className="rounded-2xl border border-orange-100 bg-white p-6 shadow-sm sm:p-7">
             <div className="mb-6 flex items-center justify-between">
               <div>
@@ -518,11 +777,13 @@ export default function ProfilePage() {
                   Recent Orders
                 </h2>
                 <p className="mt-1 text-sm text-gray-500">
-                  Your latest delicious moments.
+                  {isVendor
+                    ? "Your latest customer orders."
+                    : "Your latest delicious moments."}
                 </p>
               </div>
               <Link
-                href="/customer/orders"
+                href={ordersHref}
                 className="text-sm font-bold text-[#e52b19] hover:underline"
               >
                 View All
@@ -534,10 +795,10 @@ export default function ProfilePage() {
                 <ShoppingBag className="mx-auto text-gray-300" size={40} />
                 <p className="mt-3 font-semibold text-gray-700">No orders yet</p>
                 <Link
-                  href="/browse-menu"
+                  href={isVendor ? "/vendor/orders" : "/browse-menu"}
                   className="mt-3 inline-block text-sm font-bold text-[#e52b19]"
                 >
-                  Explore Menu
+                  {isVendor ? "View Orders" : "Explore Menu"}
                 </Link>
               </div>
             ) : (
@@ -557,6 +818,7 @@ export default function ProfilePage() {
                       </h3>
                       <p className="mt-1 text-xs text-gray-500">
                         #{order._id.slice(-6)} ·{" "}
+                        {order.customerName ? `${order.customerName} · ` : ""}
                         {new Date(order.createdAt).toLocaleDateString("en-GB", {
                           day: "numeric",
                           month: "short",
@@ -580,7 +842,9 @@ export default function ProfilePage() {
                         </span>
                       </div>
                       <Link
-                        href={`/customer/orders/${order._id}`}
+                        href={
+                          isVendor ? "/vendor/orders" : `/customer/orders/${order._id}`
+                        }
                         className="rounded-full border border-orange-200 p-2 text-[#e52b19] transition hover:bg-orange-100"
                         aria-label="View order details"
                       >
@@ -592,6 +856,7 @@ export default function ProfilePage() {
               </div>
             )}
           </section>
+          )}
 
           {/* Account Security */}
           <section className="flex flex-col gap-4 rounded-2xl border border-orange-100 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
