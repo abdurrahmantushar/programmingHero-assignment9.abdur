@@ -63,8 +63,8 @@ export async function proxy(request: NextRequest) {
       headers: request.headers,
       query: { disableRefresh: true },
     });
-  } catch {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
+  }catch {
+    return NextResponse.next();
   }
 
   if (!session?.user || session.user.isBlocked === true) {
