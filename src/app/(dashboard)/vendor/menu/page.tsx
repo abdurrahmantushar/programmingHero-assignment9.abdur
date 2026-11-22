@@ -50,7 +50,7 @@ export default function VendorMenuPage() {
       setLoading(true);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/menu-items`,
+        `/api/vendor/${session.user.id}/menu-items`,
         { credentials: "include", cache: "no-store" }
       );
 
@@ -92,7 +92,7 @@ export default function VendorMenuPage() {
       setDeletingId(itemId);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/menu-items/${itemId}`,
+        `/api/vendor/${session.user.id}/menu-items/${itemId}`,
         { credentials: "include", method: "DELETE" }
       );
 

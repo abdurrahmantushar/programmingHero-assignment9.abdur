@@ -47,7 +47,7 @@ export default function VendorSubscriptionPage() {
       setLoading(true);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/subscription`,
+        `/api/vendor/${session.user.id}/subscription`,
         { cache: "no-store",
           credentials: 'include',
          }
@@ -92,7 +92,7 @@ const handleUpgrade = async () => {
     setCheckoutLoading(true);
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/subscription/checkout`,
+      `/api/vendor/${session.user.id}/subscription/checkout`,
       {
         method: "POST",
         headers: {

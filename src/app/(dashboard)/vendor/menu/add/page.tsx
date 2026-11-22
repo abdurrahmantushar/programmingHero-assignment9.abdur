@@ -61,10 +61,8 @@ export default function AddMenuItemPage() {
 
     const fetchSubscription = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
         const response = await fetch(
-          `${apiUrl}/api/vendor/${session.user.id}/subscription`,
+          `/api/vendor/${session.user.id}/subscription`,
           { credentials: "include", cache: "no-store" }
         );
 
@@ -157,15 +155,9 @@ export default function AddMenuItemPage() {
     }
 
     const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
     if (!apiKey) {
       toast.error("ImgBB API key is missing.");
-      return;
-    }
-
-    if (!apiUrl) {
-      toast.error("Backend API URL is missing.");
       return;
     }
 
@@ -235,7 +227,7 @@ export default function AddMenuItemPage() {
       };
 
       const response = await fetch(
-        `${apiUrl.replace(/\/+$/, "")}/api/vendor/${session.user.id}/menu-items`,
+        `/api/vendor/${session.user.id}/menu-items`,
         { credentials: "include",
           method: "POST",
           headers: {

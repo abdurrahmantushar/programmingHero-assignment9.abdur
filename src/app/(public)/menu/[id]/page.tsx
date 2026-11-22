@@ -102,7 +102,7 @@ export default function PizzaDetailsPage({
     const fetchFavoriteStatus = async () => {
       try {
         const response = await fetch(
-          `${API_URL}/api/customer/${session.user.id}/favorites`,
+          `/api/customer/${session.user.id}/favorites`,
           { credentials: "include", cache: "no-store" }
         );
 
@@ -139,7 +139,7 @@ export default function PizzaDetailsPage({
     try {
       if (isFavorite && favoriteId) {
         const response = await fetch(
-          `${API_URL}/api/favorites/${favoriteId}`,
+          `/api/favorites/${favoriteId}`,
           { credentials: "include",
             method: "DELETE",
           }
@@ -154,7 +154,7 @@ export default function PizzaDetailsPage({
         setIsFavorite(false);
         setFavoriteId("");
       } else {
-        const response = await fetch(`${API_URL}/api/favorites`, { credentials: "include",
+        const response = await fetch("/api/favorites", { credentials: "include",
           method: "POST",
           headers: {
             "Content-Type": "application/json",

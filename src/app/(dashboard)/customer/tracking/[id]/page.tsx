@@ -68,7 +68,7 @@ export default function OrderTrackingPage({
         setError("");
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/customer/${session.user.id}/orders/${orderId}`
+          `/api/customer/${session.user.id}/orders/${orderId}`
         , { credentials: "include" });
 
         const result = await response.json();

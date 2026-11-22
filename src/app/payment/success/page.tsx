@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 
-type VerificationStatus = "loading" | "success" | "error";
+type VerificationStatus = "loading" | "pending" | "success" | "error";
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
@@ -50,7 +50,7 @@ const verifyPayment = async () => {
     setMessage("Verifying your payment with Stripe...");
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/subscription/verify`,
+      `/api/vendor/${session.user.id}/subscription/verify`,
       {
         method: "POST",
         headers: {
@@ -70,8 +70,17 @@ const verifyPayment = async () => {
     }
 
     if (!cancelled) {
-      setStatus("success");
-      setMessage("Your Premium subscription has been activated successfully.");
+      if (result.data?.premiumActivated) {
+        setStatus("success");
+        setMessage("Your Premium subscription has been activated successfully.");
+      } else {
+        setStatus("pending");
+        setMessage(
+          result.data?.paymentVerified
+            ? "Stripe payment confirmed. Premium activation is being finalized. Refresh this page shortly to check your status."
+            : "Payment confirmation is being finalized. Refresh this page shortly to check your status."
+        );
+      }
     }
   } catch (error) {
     console.error("Payment Verification Error:", error);
@@ -110,7 +119,7 @@ const verifyPayment = async () => {
           }`}
         >
           <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full border border-white/30 bg-white/15">
-            {status === "loading" ? (
+            {status === "loading" || status === "pending" ? (
               <RefreshCw size={48} className="animate-spin" />
             ) : status === "success" ? (
               <CheckCircle2 size={55} />
@@ -123,17 +132,21 @@ const verifyPayment = async () => {
             <Sparkles size={14} />
             {status === "loading"
               ? "Payment Verification"
-              : status === "success"
-                ? "Payment Verified"
-                : "Verification Failed"}
+              : status === "pending"
+                ? "Activation Pending"
+                : status === "success"
+                  ? "Payment Verified"
+                  : "Verification Failed"}
           </div>
 
           <h1 className="mt-5 text-3xl font-extrabold sm:text-4xl">
             {status === "loading"
               ? "Verifying Payment..."
-              : status === "success"
-                ? "Payment Successful!"
-                : "Payment Verification Failed"}
+              : status === "pending"
+                ? "Finalizing Premium..."
+                : status === "success"
+                  ? "Payment Successful!"
+                  : "Payment Verification Failed"}
           </h1>
 
           <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-white/90">
@@ -163,9 +176,11 @@ const verifyPayment = async () => {
                 <p className="mt-1 text-xs text-gray-500">
                   {status === "success"
                     ? "Your Premium plan is now active."
-                    : status === "loading"
-                      ? "Checking your payment information."
-                      : "Your Premium activation is not confirmed."}
+                    : status === "pending"
+                      ? "Payment confirmed. Premium activation is being finalized."
+                      : status === "loading"
+                        ? "Checking your payment information."
+                        : "Your Premium activation is not confirmed."}
                 </p>
               </div>
             </div>
@@ -221,7 +236,9 @@ const verifyPayment = async () => {
             ) : (
               <div className="flex items-center justify-center gap-2 py-3 text-sm font-semibold text-gray-400">
                 <RefreshCw size={16} className="animate-spin" />
-                Please wait while we verify your payment.
+                {status === "pending"
+                  ? "Waiting for Premium activation. Refresh shortly."
+                  : "Please wait while we verify your payment."}
               </div>
             )}
           </div>

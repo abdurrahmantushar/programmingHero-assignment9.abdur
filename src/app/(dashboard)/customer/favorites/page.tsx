@@ -26,8 +26,7 @@ interface Favorite {
   location: string;
 }
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = "";
 
 export default function FavoritesPage() {
   const { data: session, isPending } = authClient.useSession();

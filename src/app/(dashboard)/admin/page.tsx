@@ -257,7 +257,7 @@ export default function AdminDashboardPage() {
         setError("");
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/admin/dashboard`,
+          "/api/admin/dashboard",
           { credentials: "include", cache: "no-store" }
         );
 

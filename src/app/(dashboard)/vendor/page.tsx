@@ -116,7 +116,7 @@ export default function AddMenuItemPage() {
       };
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/menu-items`,
+        `/api/vendor/${session.user.id}/menu-items`,
         { credentials: "include",
           method: "POST",
           headers: {

@@ -57,7 +57,7 @@ interface Pagination {
   limit: number;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = "";
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);

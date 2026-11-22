@@ -26,7 +26,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import toast from "react-hot-toast";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = "";
 
 const menuItems = [
   { label: "My Profile", icon: UserRound, active: true },

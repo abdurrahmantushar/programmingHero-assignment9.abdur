@@ -127,7 +127,7 @@ export default function OrderPage({
         setAddressError("");
 
         const response = await fetch(
-          `${API_URL}/api/customer/${session.user.id}/addresses`
+          `/api/customer/${session.user.id}/addresses`
         , { credentials: "include" });
 
         const result = await response.json();
@@ -203,7 +203,7 @@ export default function OrderPage({
 
       const deliveryAddress = `${selectedAddress.fullName}, ${selectedAddress.phone}, ${selectedAddress.address}, ${selectedAddress.area}, ${selectedAddress.city} - ${selectedAddress.postalCode}`;
 
-      const response = await fetch(`${API_URL}/api/orders`, { credentials: "include",
+      const response = await fetch("/api/orders", { credentials: "include",
         method: "POST",
         headers: {
           "Content-Type": "application/json",

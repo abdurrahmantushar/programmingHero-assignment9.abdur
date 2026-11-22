@@ -97,7 +97,7 @@ export default function AdminSettingsPage() {
                 setSettingsError("");
 
                 const response = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/api/admin/settings`,
+                    "/api/admin/settings",
                     { credentials: "include", cache: "no-store" }
                 );
 
@@ -144,7 +144,7 @@ export default function AdminSettingsPage() {
             setSettingsError("");
 
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/admin/settings`,
+                "/api/admin/settings",
                 { credentials: "include",
                     method: "PATCH",
                     headers: {

@@ -46,7 +46,7 @@ interface Pagination {
   limit: number;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = "";
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);

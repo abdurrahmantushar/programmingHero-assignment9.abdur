@@ -56,7 +56,7 @@ export default function VendorOrdersPage() {
       setLoading(true);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/orders`,
+        `/api/vendor/${session.user.id}/orders`,
         { credentials: "include", cache: "no-store" }
       );
 
@@ -95,7 +95,7 @@ export default function VendorOrdersPage() {
       setUpdatingId(orderId);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/orders/${orderId}`,
+        `/api/vendor/${session.user.id}/orders/${orderId}`,
         { credentials: "include",
           method: "PATCH",
           headers: {

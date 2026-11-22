@@ -1,5 +1,32 @@
 import type { NextConfig } from "next";
 
+const apiOrigin = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
+
+const authenticatedApiRewrites = apiOrigin
+  ? [
+      {
+        source: "/api/admin/:path*",
+        destination: `${apiOrigin}/api/admin/:path*`,
+      },
+      {
+        source: "/api/vendor/:path*",
+        destination: `${apiOrigin}/api/vendor/:path*`,
+      },
+      {
+        source: "/api/customer/:path*",
+        destination: `${apiOrigin}/api/customer/:path*`,
+      },
+      {
+        source: "/api/favorites/:path*",
+        destination: `${apiOrigin}/api/favorites/:path*`,
+      },
+      {
+        source: "/api/orders/:path*",
+        destination: `${apiOrigin}/api/orders/:path*`,
+      },
+    ]
+  : [];
+
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
@@ -11,6 +38,11 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
+  },
+  rewrites() {
+    return {
+      afterFiles: authenticatedApiRewrites,
+    };
   },
   images: {
     remotePatterns: [
