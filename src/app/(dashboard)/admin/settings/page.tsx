@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { authFetch } from "@/lib/auth-fetch";
 import {
     Settings,
@@ -78,6 +79,10 @@ export default function AdminSettingsPage() {
     const [subscriptionNotification, setSubscriptionNotification] = useState(true);
     const [emailNotification, setEmailNotification] = useState(true);
     const [twoFactor, setTwoFactor] = useState(false);
+    const prefersReducedMotion = useReducedMotion() ?? false;
+    const pageFade: Variants = { hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 16 }, show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.45, ease: "easeOut" } } };
+    const stagger: Variants = { hidden: {}, show: { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.07, delayChildren: prefersReducedMotion ? 0 : 0.04 } } };
+    const itemFade: Variants = { hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 12 }, show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.35, ease: "easeOut" } } };
     const [showPassword, setShowPassword] = useState(false);
     const [saved, setSaved] = useState(false);
     const [websiteUrl, setWebsiteUrl] = useState("https://pizzahub.com");
@@ -192,7 +197,7 @@ export default function AdminSettingsPage() {
 
     return (
 
-        <div className="min-h-screen space-y-6 pb-10">
+        <motion.div className="min-h-screen space-y-6 pb-10" variants={pageFade} initial="hidden" animate="show">
             {settingsError && (
                 <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
                     {settingsError}
@@ -632,6 +637,6 @@ export default function AdminSettingsPage() {
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 }

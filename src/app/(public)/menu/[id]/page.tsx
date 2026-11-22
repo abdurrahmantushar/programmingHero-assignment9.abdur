@@ -14,6 +14,7 @@ import {
   Utensils,
   Tag,
 } from "lucide-react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { authClient } from "@/lib/auth-client";
 import MenuItemImage from "@/app/components/shared/MenuItemImage";
 import toast from "react-hot-toast";
@@ -193,6 +194,48 @@ export default function PizzaDetailsPage({
     ? [...images.slice(activeImageIndex), ...images.slice(0, activeImageIndex)]
     : images;
 
+  const prefersReducedMotion = useReducedMotion() ?? false;
+
+  const fadeScale: Variants = {
+    hidden: {
+      opacity: prefersReducedMotion ? 1 : 0,
+      scale: prefersReducedMotion ? 1 : 0.97,
+    },
+    show: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: prefersReducedMotion ? 0 : 0.55,
+        ease: "easeOut",
+      },
+    },
+  };
+
+  const stagger: Variants = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: prefersReducedMotion ? 0 : 0.1,
+        delayChildren: prefersReducedMotion ? 0 : 0.05,
+      },
+    },
+  };
+
+  const fadeUp: Variants = {
+    hidden: {
+      opacity: prefersReducedMotion ? 1 : 0,
+      y: prefersReducedMotion ? 0 : 18,
+    },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: prefersReducedMotion ? 0 : 0.45,
+        ease: "easeOut",
+      },
+    },
+  };
+
   if (isPending || loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -231,7 +274,12 @@ export default function PizzaDetailsPage({
 
         <div className="grid gap-10 rounded-2xl bg-white p-5 shadow-sm sm:p-8 lg:grid-cols-2 lg:gap-12">
           <div className="relative">
-            <div className="relative aspect-square overflow-hidden rounded-xl bg-gray-100">
+            <motion.div
+              variants={fadeScale}
+              initial="hidden"
+              animate="show"
+              className="relative aspect-square overflow-hidden rounded-xl bg-gray-100"
+            >
               {pizza.images?.[0] ? (
                 <MenuItemImage
                   key={activeImageIndex}
@@ -255,7 +303,7 @@ export default function PizzaDetailsPage({
               )}
 
               {session?.user?.role === "customer" && (
-                <button
+                <motion.button
                   type="button"
                   onClick={handleFavorite}
                   disabled={favoriteLoading}
@@ -264,7 +312,9 @@ export default function PizzaDetailsPage({
                       ? "Remove from favorites"
                       : "Add to favorites"
                   }
-                  className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-md transition hover:scale-105 disabled:opacity-60"
+                  whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }}
+                  whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }}
+                  className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-md transition disabled:opacity-60"
                 >
                   <Heart
                     size={22}
@@ -274,18 +324,20 @@ export default function PizzaDetailsPage({
                         : "text-gray-600"
                     }
                   />
-                </button>
+                </motion.button>
               )}
-            </div>
+            </motion.div>
 
             {pizza.images?.length > 1 && (
               <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
                 {pizza.images.map((image, index) => (
-                  <button
+                  <motion.button
                     key={`${image}-${index}`}
                     type="button"
                     onClick={() => setActiveImageIndex(index)}
                     aria-label={`Show image ${index + 1}`}
+                    whileHover={prefersReducedMotion ? undefined : { scale: 1.04 }}
+                    whileTap={prefersReducedMotion ? undefined : { scale: 0.96 }}
                     className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border-2 bg-gray-100 transition ${
                       activeImageIndex === index
                         ? "border-[#e62e20]"
@@ -298,7 +350,7 @@ export default function PizzaDetailsPage({
                       sizes="80px"
                       className="object-cover"
                     />
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             )}
@@ -335,30 +387,50 @@ export default function PizzaDetailsPage({
             </div>
           </div>
 
-          <div className="flex flex-col justify-center">
-            <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-[#e62e20]">
+          <motion.div
+            className="flex flex-col justify-center"
+            variants={stagger}
+            initial="hidden"
+            animate="show"
+          >
+            <motion.p
+              variants={fadeUp}
+              className="mb-2 text-sm font-semibold uppercase tracking-wider text-[#e62e20]"
+            >
               {normalizeCategory(pizza.category)}
-            </p>
+            </motion.p>
 
-            <h1 className="text-3xl font-bold text-[#292929] sm:text-4xl">
+            <motion.h1
+              variants={fadeUp}
+              className="text-3xl font-bold text-[#292929] sm:text-4xl"
+            >
               {pizza.itemName}
-            </h1>
+            </motion.h1>
 
-            <p className="mt-5 text-3xl font-bold text-[#e62e20]">
+            <motion.p
+              variants={fadeUp}
+              className="mt-5 text-3xl font-bold text-[#e62e20]"
+            >
               ৳{pizza.price}
-            </p>
+            </motion.p>
 
-            <div className="my-6 h-px bg-[#eee5db]" />
+            <motion.div variants={fadeUp} className="my-6 h-px bg-[#eee5db]" />
 
-            <h2 className="mb-2 text-lg font-semibold text-[#292929]">
+            <motion.h2
+              variants={fadeUp}
+              className="mb-2 text-lg font-semibold text-[#292929]"
+            >
               About This Pizza
-            </h2>
+            </motion.h2>
 
-            <p className="leading-7 text-gray-600">
+            <motion.p variants={fadeUp} className="leading-7 text-gray-600">
               {pizza.description || "No description available."}
-            </p>
+            </motion.p>
 
-            <div className="mt-7 rounded-xl bg-[#fffaf3] p-5">
+            <motion.div
+              variants={fadeUp}
+              className="mt-7 rounded-xl bg-[#fffaf3] p-5"
+            >
               <h2 className="mb-4 font-semibold text-[#292929]">
                 Product Information
               </h2>
@@ -398,9 +470,12 @@ export default function PizzaDetailsPage({
                   </span>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="mt-6 flex items-start gap-3 text-gray-600">
+            <motion.div
+              variants={fadeUp}
+              className="mt-6 flex items-start gap-3 text-gray-600"
+            >
               <MapPin
                 size={20}
                 className="mt-0.5 shrink-0 text-[#e62e20]"
@@ -411,15 +486,19 @@ export default function PizzaDetailsPage({
                 </p>
                 <p className="mt-1">{pizza.location}</p>
               </div>
-            </div>
+            </motion.div>
 
             {session?.user?.role === "vendor" ||
             session?.user?.role === "admin" ? (
-              <p className="mt-8 rounded-xl bg-[#fff1ed] px-6 py-4 text-center text-sm font-semibold text-[#e62e20]">
+              <motion.p
+                variants={fadeUp}
+                className="mt-8 rounded-xl bg-[#fff1ed] px-6 py-4 text-center text-sm font-semibold text-[#e62e20]"
+              >
                 {session.user.role} can&apos;t order. Only customer can.
-              </p>
+              </motion.p>
             ) : (
-              <button
+              <motion.button
+                variants={fadeUp}
                 type="button"
                 onClick={() =>
                   router.push(
@@ -427,17 +506,30 @@ export default function PizzaDetailsPage({
                   )
                 }
                 disabled={!pizza.isAvailable}
+                whileHover={
+                  prefersReducedMotion || !pizza.isAvailable
+                    ? undefined
+                    : { scale: 1.01, y: -1 }
+                }
+                whileTap={
+                  prefersReducedMotion || !pizza.isAvailable
+                    ? undefined
+                    : { scale: 0.99 }
+                }
                 className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-[#e62e20] px-6 py-4 font-semibold text-white transition hover:bg-[#c92318] disabled:cursor-not-allowed disabled:bg-gray-400"
               >
                 <ShoppingBag size={20} />
                 {pizza.isAvailable ? "Order Now" : "Currently Unavailable"}
-              </button>
+              </motion.button>
             )}
 
-            <p className="mt-3 text-center text-xs text-gray-400">
+            <motion.p
+              variants={fadeUp}
+              className="mt-3 text-center text-xs text-gray-400"
+            >
               Freshly prepared and delivered to your doorstep.
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
         </div>
       </div>
     </section>

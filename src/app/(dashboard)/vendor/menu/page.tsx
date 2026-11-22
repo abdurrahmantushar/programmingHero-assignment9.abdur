@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import {
   Plus,
   Search,
@@ -40,6 +41,10 @@ export default function VendorMenuPage() {
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const prefersReducedMotion = useReducedMotion() ?? false;
+  const pageFade: Variants = { hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 16 }, show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.45, ease: "easeOut" } } };
+  const stagger: Variants = { hidden: {}, show: { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.07, delayChildren: prefersReducedMotion ? 0 : 0.04 } } };
+  const itemFade: Variants = { hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 12 }, show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.35, ease: "easeOut" } } };
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [status, setStatus] = useState("all");
@@ -186,7 +191,7 @@ export default function VendorMenuPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-7">
+    <motion.div className="mx-auto max-w-7xl space-y-7" variants={pageFade} initial="hidden" animate="show">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">
@@ -481,6 +486,6 @@ export default function VendorMenuPage() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

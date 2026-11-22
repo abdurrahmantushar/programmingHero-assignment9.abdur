@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
@@ -52,6 +53,10 @@ export default function AddMenuItemPage() {
     useState<SubscriptionData | null>(null);
 
   const [loadingSubscription, setLoadingSubscription] = useState(true);
+  const prefersReducedMotion = useReducedMotion() ?? false;
+  const pageFade: Variants = { hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 16 }, show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.45, ease: "easeOut" } } };
+  const stagger: Variants = { hidden: {}, show: { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.07, delayChildren: prefersReducedMotion ? 0 : 0.04 } } };
+  const itemFade: Variants = { hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 12 }, show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.35, ease: "easeOut" } } };
 
   useEffect(() => {
     if (isPending) return;
@@ -388,7 +393,7 @@ export default function AddMenuItemPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-7">
+    <motion.div className="mx-auto max-w-5xl space-y-7" variants={pageFade} initial="hidden" animate="show">
       <div>
         <Link prefetch={false}
           href="/vendor/menu"
@@ -424,7 +429,7 @@ export default function AddMenuItemPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <section className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm sm:p-7">
+        <motion.section variants={itemFade} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.12 }} className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm sm:p-7">
           <div className="mb-6 flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-[#e62e20]">
               <UtensilsCrossed size={22} />
@@ -553,9 +558,9 @@ export default function AddMenuItemPage() {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
-        <section className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm sm:p-7">
+        <motion.section variants={itemFade} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.12 }} className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm sm:p-7">
           <div className="mb-6 flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-[#e62e20]">
               <ImagePlus size={22} />
@@ -617,7 +622,7 @@ export default function AddMenuItemPage() {
           <p className="mt-4 text-xs text-gray-400">
             You can upload a maximum of 8 images.
           </p>
-        </section>
+        </motion.section>
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Link prefetch={false}
@@ -640,6 +645,6 @@ export default function AddMenuItemPage() {
           </button>
         </div>
       </form>
-    </div>
+    </motion.div>
   );
 }

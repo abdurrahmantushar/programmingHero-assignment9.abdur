@@ -10,6 +10,7 @@ import {
   MapPin,
   Loader2,
 } from "lucide-react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import MenuItemImage from "@/app/components/shared/MenuItemImage";
 import { normalizeCategory } from "@/constants/categories";
 
@@ -34,6 +35,32 @@ export default function FeaturedMenu() {
   const [featuredItems, setFeaturedItems] = useState<MenuItem[]>([]);
   const [premiumLoading, setPremiumLoading] = useState(true);
   const [featuredLoading, setFeaturedLoading] = useState(true);
+  const prefersReducedMotion = useReducedMotion() ?? false;
+
+  const cardContainer: Variants = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: prefersReducedMotion ? 0 : 0.1,
+        delayChildren: prefersReducedMotion ? 0 : 0.05,
+      },
+    },
+  };
+
+  const cardItem: Variants = {
+    hidden: {
+      opacity: prefersReducedMotion ? 1 : 0,
+      y: prefersReducedMotion ? 0 : 20,
+    },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: prefersReducedMotion ? 0 : 0.45,
+        ease: "easeOut",
+      },
+    },
+  };
 
   useEffect(() => {
     const fetchPremiumItems = async () => {
@@ -109,11 +136,18 @@ export default function FeaturedMenu() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <motion.div
+            className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+            variants={cardContainer}
+            initial="hidden"
+            animate="show"
+          >
             {premiumItems.map((item) => (
-              <div
+              <motion.div
                 key={item._id}
-                className="group overflow-hidden rounded-xl border border-amber-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+                variants={cardItem}
+                whileHover={prefersReducedMotion ? undefined : { y: -4, scale: 1.01 }}
+                className="group overflow-hidden rounded-xl border border-amber-200 bg-white shadow-sm transition duration-300 hover:shadow-lg"
               >
                 <div className="relative h-[210px] overflow-hidden bg-[#fff2e5]">
                   <MenuItemImage
@@ -167,9 +201,9 @@ export default function FeaturedMenu() {
                     </Link>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
           <Link
             href="/browse-menu"
@@ -216,11 +250,18 @@ export default function FeaturedMenu() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <motion.div
+            className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+            variants={cardContainer}
+            initial="hidden"
+            animate="show"
+          >
             {featuredItems.map((item) => (
-              <div
+              <motion.div
                 key={item._id}
-                className="group overflow-hidden rounded-xl border border-[#eee5db] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+                variants={cardItem}
+                whileHover={prefersReducedMotion ? undefined : { y: -4, scale: 1.01 }}
+                className="group overflow-hidden rounded-xl border border-[#eee5db] bg-white shadow-sm transition duration-300 hover:shadow-lg"
               >
                 <div className="relative h-[210px] overflow-hidden bg-[#fff2e5]">
                   <MenuItemImage
@@ -263,9 +304,9 @@ export default function FeaturedMenu() {
                     </Link>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </section>
     </>

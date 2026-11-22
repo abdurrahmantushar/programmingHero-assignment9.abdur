@@ -1,30 +1,92 @@
 
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, Play, Star } from "lucide-react";
 import Image from "next/image";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 
 export default function HeroSection() {
+    const prefersReducedMotion = useReducedMotion() ?? false;
+
+    const fadeUp: Variants = {
+        hidden: {
+            opacity: prefersReducedMotion ? 1 : 0,
+            y: prefersReducedMotion ? 0 : 20,
+        },
+        show: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: prefersReducedMotion ? 0 : 0.55,
+                ease: "easeOut",
+            },
+        },
+    };
+
+    const stagger: Variants = {
+        hidden: {},
+        show: {
+            transition: {
+                staggerChildren: prefersReducedMotion ? 0 : 0.12,
+                delayChildren: prefersReducedMotion ? 0 : 0.05,
+            },
+        },
+    };
+
+    const imageReveal: Variants = {
+        hidden: {
+            opacity: prefersReducedMotion ? 1 : 0,
+            y: prefersReducedMotion ? 0 : 16,
+            scale: prefersReducedMotion ? 1 : 0.98,
+        },
+        show: {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            transition: {
+                duration: prefersReducedMotion ? 0 : 0.7,
+                ease: "easeOut",
+                delay: prefersReducedMotion ? 0 : 0.15,
+            },
+        },
+    };
+
     return (
         <section className="relative overflow-hidden bg-[#fff7eb]">
             <div className="mx-auto grid min-h-[510px] max-w-[1440px] items-center gap-10 px-5 py-16 sm:px-8 lg:grid-cols-2 lg:px-12 lg:py-20">
-                <div className="relative z-10">
-                    <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#e6392e] shadow-sm">
+                <motion.div
+                    className="relative z-10"
+                    variants={stagger}
+                    initial="hidden"
+                    animate="show"
+                >
+                    <motion.div
+                        variants={fadeUp}
+                        className="mb-6 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#e6392e] shadow-sm"
+                    >
                         🔥 HOT & DELICIOUS
-                    </div>
+                    </motion.div>
 
-                    <h1 className="max-w-[600px] text-4xl font-extrabold leading-tight tracking-tight text-[#25211e] sm:text-5xl lg:text-[56px]">
+                    <motion.h1
+                        variants={fadeUp}
+                        className="max-w-[600px] text-4xl font-extrabold leading-tight tracking-tight text-[#25211e] sm:text-5xl lg:text-[56px]"
+                    >
                         Craving Pizza?
                         <br />
                         You’re in the{" "}
                         <span className="text-[#e6392e]">Right Place!</span>
-                    </h1>
+                    </motion.h1>
 
-                    <p className="mt-6 max-w-[500px] text-base leading-8 text-[#625b54] sm:text-lg">
+                    <motion.p
+                        variants={fadeUp}
+                        className="mt-6 max-w-[500px] text-base leading-8 text-[#625b54] sm:text-lg"
+                    >
                         Discover the best local pizza restaurants, explore mouth-watering
                         menu and get it delivered hot & fresh.
-                    </p>
+                    </motion.p>
 
-                    <div className="mt-8 flex flex-wrap gap-4">
+                    <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-4">
                         <Link
                             href="/browse-menu"
                             className="inline-flex items-center gap-3 rounded-lg bg-[#e62e20] px-6 py-3.5 text-sm font-bold text-white shadow-md shadow-red-200 transition hover:-translate-y-1 hover:bg-[#c9251a]"
@@ -40,9 +102,12 @@ export default function HeroSection() {
                             How It Works
                             <Play size={17} fill="currentColor" />
                         </Link>
-                    </div>
+                    </motion.div>
 
-                    <div className="mt-9 flex flex-wrap items-center gap-4">
+                    <motion.div
+                        variants={fadeUp}
+                        className="mt-9 flex flex-wrap items-center gap-4"
+                    >
                         <div className="flex -space-x-3">
                             {["👨🏻", "👩🏻", "👨🏽"].map((person, index) => (
                                 <div
@@ -75,15 +140,20 @@ export default function HeroSection() {
                                 <span className="text-[#e6392e]">(2K+ Reviews)</span>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
 
                 <div className="relative flex min-h-[320px] items-center justify-center lg:min-h-[440px]">
                     <div className="absolute h-[300px] w-[300px] rounded-full bg-[#ffe1bd] blur-3xl sm:h-[400px] sm:w-[400px]" />
 
                     <div className="relative flex h-[300px] w-full max-w-[520px] items-center justify-center sm:h-[420px]">
 
-                        <div className="relative flex min-h-[320px] items-center justify-center lg:min-h-[440px]">
+                        <motion.div
+                            variants={imageReveal}
+                            initial="hidden"
+                            animate="show"
+                            className="relative flex min-h-[320px] items-center justify-center lg:min-h-[440px]"
+                        >
                             <Image
                                 src="/images/pizzas/hero-pizza.png"
                                 alt="Freshly baked PizzaHub special pizza"
@@ -92,7 +162,7 @@ export default function HeroSection() {
                                 priority
                                 className="relative z-10 h-auto w-full max-w-[650px] object-contain drop-shadow-2xl"
                             />
-                        </div>
+                        </motion.div>
 
                         <div className="absolute bottom-5 left-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-[#e6392e] shadow-lg">
                             ❤️ Made with Love

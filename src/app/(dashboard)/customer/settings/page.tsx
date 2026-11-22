@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import {
   UserRound,
   Lock,
@@ -30,6 +31,10 @@ export default function CustomerSettingsPage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const prefersReducedMotion = useReducedMotion() ?? false;
+  const pageFade: Variants = { hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 16 }, show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.45, ease: "easeOut" } } };
+  const stagger: Variants = { hidden: {}, show: { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.08, delayChildren: prefersReducedMotion ? 0 : 0.05 } } };
+  const itemFade: Variants = { hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 14 }, show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.35, ease: "easeOut" } } };
 
 
   useEffect(() => {
@@ -143,7 +148,7 @@ export default function CustomerSettingsPage() {
   if (!session) return null;
 
   return (
-    <div className="min-h-screen bg-[#fffaf3] px-4 py-8  sm:px-6 lg:px-8">
+    <motion.div className="min-h-screen bg-[#fffaf3] px-4 py-8  sm:px-6 lg:px-8" variants={pageFade} initial="hidden" animate="show">
       <div className="mx-auto max-w-5xl">
         <div className="mb-8">
           <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-[#e62e20]">
@@ -160,7 +165,7 @@ export default function CustomerSettingsPage() {
         </div>
 
         <div className="space-y-7">
-          <section className="rounded-2xl border border-[#f1e5d9] bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:p-7">
+          <motion.section variants={itemFade} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.12 }} className="rounded-2xl border border-[#f1e5d9] bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:p-7">
             <div className="mb-7 flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-[#e62e20] dark:bg-red-950">
                 <UserRound size={23} />
@@ -220,9 +225,9 @@ export default function CustomerSettingsPage() {
                 </button>
               </div>
             </form>
-          </section>
+          </motion.section>
 
-          <section className="rounded-2xl border border-[#f1e5d9] bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:p-7">
+          <motion.section variants={itemFade} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.12 }} className="rounded-2xl border border-[#f1e5d9] bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:p-7">
             <div className="mb-7 flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-[#e62e20] dark:bg-red-950">
                 <Lock size={23} />
@@ -361,12 +366,12 @@ export default function CustomerSettingsPage() {
                 </button>
               </div>
             </form>
-          </section>
+          </motion.section>
 
 
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

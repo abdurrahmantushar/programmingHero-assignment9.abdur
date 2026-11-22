@@ -2,6 +2,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import {
   Search,
   ShoppingBag,
@@ -49,6 +50,10 @@ export default function VendorOrdersPage() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const prefersReducedMotion = useReducedMotion() ?? false;
+  const pageFade: Variants = { hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 16 }, show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.45, ease: "easeOut" } } };
+  const stagger: Variants = { hidden: {}, show: { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.07, delayChildren: prefersReducedMotion ? 0 : 0.04 } } };
+  const itemFade: Variants = { hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 12 }, show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.35, ease: "easeOut" } } };
 
   const fetchOrders = useCallback(async () => {
     if (!session?.user?.id) return;
@@ -199,7 +204,7 @@ export default function VendorOrdersPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-7">
+    <motion.div className="mx-auto max-w-7xl space-y-7" variants={pageFade} initial="hidden" animate="show">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">
@@ -220,8 +225,8 @@ export default function VendorOrdersPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+      <motion.div className="grid grid-cols-2 gap-4 lg:grid-cols-4" variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.12 }}>
+        <motion.div variants={itemFade} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-[#e62e20]">
               <ShoppingBag size={21} />
@@ -231,9 +236,9 @@ export default function VendorOrdersPage() {
           <h2 className="mt-1 text-3xl font-extrabold text-gray-900">
             {stats.total}
           </h2>
-        </div>
+        </motion.div>
 
-        <div className="rounded-2xl border border-amber-100 bg-white p-5 shadow-sm">
+        <motion.div variants={itemFade} className="rounded-2xl border border-amber-100 bg-white p-5 shadow-sm">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
             <Clock3 size={21} />
           </div>
@@ -241,9 +246,9 @@ export default function VendorOrdersPage() {
           <h2 className="mt-1 text-3xl font-extrabold text-amber-600">
             {stats.pending}
           </h2>
-        </div>
+        </motion.div>
 
-        <div className="rounded-2xl border border-green-100 bg-white p-5 shadow-sm">
+        <motion.div variants={itemFade} className="rounded-2xl border border-green-100 bg-white p-5 shadow-sm">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-50 text-green-600">
             <CheckCircle2 size={21} />
           </div>
@@ -251,9 +256,9 @@ export default function VendorOrdersPage() {
           <h2 className="mt-1 text-3xl font-extrabold text-green-600">
             {stats.accepted}
           </h2>
-        </div>
+        </motion.div>
 
-        <div className="rounded-2xl border border-red-100 bg-white p-5 shadow-sm">
+        <motion.div variants={itemFade} className="rounded-2xl border border-red-100 bg-white p-5 shadow-sm">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-600">
             <XCircle size={21} />
           </div>
@@ -261,10 +266,10 @@ export default function VendorOrdersPage() {
           <h2 className="mt-1 text-3xl font-extrabold text-red-600">
             {stats.rejected}
           </h2>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
-      <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
+      <motion.div variants={itemFade} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row">
           <div className="relative flex-1">
             <Search
@@ -307,7 +312,7 @@ export default function VendorOrdersPage() {
           <Filter size={14} />
           Showing {filteredOrders.length} of {orders.length} orders
         </div>
-      </div>
+      </motion.div>
 
       {filteredOrders.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-5 py-16 text-center">
@@ -587,6 +592,6 @@ export default function VendorOrdersPage() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

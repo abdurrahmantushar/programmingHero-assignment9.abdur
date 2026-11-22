@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import ThemeToggle from "@/app/components/shared/ThemeToggle";
+import { useSignOut } from "@/hooks/useSignOut";
 
 const dashboardMenus = {
   customer: {
@@ -79,6 +80,7 @@ function DashboardLayoutContent({
   const [failedImage, setFailedImage] = useState<string | null>(null);
 
   const { data: session, isPending } = authClient.useSession();
+  const { signOut, signingOut } = useSignOut();
 
   const role = session?.user?.role as keyof typeof dashboardMenus | undefined;
   const userName = session?.user?.name || "User";
@@ -151,30 +153,32 @@ function DashboardLayoutContent({
         </div>
 
         <div className="border-b border-orange-100 px-6 py-6">
-          <div className="flex items-center gap-3">
-            {userImage && failedImage !== userImage ? (
-              <Image
-                src={userImage}
-                alt={userName}
-                width={48}
-                height={48}
-                unoptimized
-                onError={() => setFailedImage(userImage)}
-                className="h-12 w-12 rounded-full object-cover"
-              />
-            ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-[#e62e20]">
-                <UserRound size={25} />
-              </div>
-            )}
+          <Link href="/profile" className="block rounded-lg transition-colors hover:bg-orange-50">
+            <div className="flex items-center gap-3">
+              {userImage && failedImage !== userImage ? (
+                <Image
+                  src={userImage}
+                  alt={userName}
+                  width={48}
+                  height={48}
+                  unoptimized
+                  onError={() => setFailedImage(userImage)}
+                  className="h-12 w-12 rounded-full object-cover"
+                />
+              ) : (
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-[#e62e20]">
+                  <UserRound size={25} />
+                </div>
+              )}
 
-            <div className="min-w-0">
-              <p className="truncate font-bold">{userName}</p>
-              <p className="text-xs capitalize text-gray-500">
-                {role} Dashboard
-              </p>
+              <div className="min-w-0">
+                <p className="truncate font-bold">{userName}</p>
+                <p className="text-xs capitalize text-gray-500">
+                  {role} Dashboard
+                </p>
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
 
         <nav className="flex-1 space-y-2 overflow-y-auto px-4 py-6">
@@ -205,7 +209,7 @@ function DashboardLayoutContent({
           })}
         </nav>
 
-        <div className="border-t border-orange-100 p-4">
+        <div className="border-t border-orange-100 p-4 space-y-2">
           <Link
             href="/"
             className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-gray-600 transition hover:bg-orange-50 hover:text-[#e62e20]"
@@ -213,6 +217,15 @@ function DashboardLayoutContent({
             <LogOut size={19} />
             Back to Home
           </Link>
+<button
+  type="button"
+  onClick={() => void signOut()}
+  disabled={signingOut}
+  className="flex w-full items-center gap-3 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+>
+  <LogOut size={19} />
+  {signingOut ? "Signing Out..." : "Sign Out"}
+</button>
         </div>
       </aside>
 

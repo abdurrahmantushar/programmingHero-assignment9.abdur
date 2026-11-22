@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import MenuItemImage from "@/app/components/shared/MenuItemImage";
 import { CATEGORIES, normalizeCategory } from "@/constants/categories";
 
@@ -52,6 +53,32 @@ export default function BrowseMenuPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedLocation, setSelectedLocation] = useState("All");
   const [sortOrder, setSortOrder] = useState("default");
+  const prefersReducedMotion = useReducedMotion() ?? false;
+
+  const cardContainer: Variants = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: prefersReducedMotion ? 0 : 0.08,
+        delayChildren: prefersReducedMotion ? 0 : 0.04,
+      },
+    },
+  };
+
+  const cardItem: Variants = {
+    hidden: {
+      opacity: prefersReducedMotion ? 1 : 0,
+      y: prefersReducedMotion ? 0 : 20,
+    },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: prefersReducedMotion ? 0 : 0.45,
+        ease: "easeOut",
+      },
+    },
+  };
 
   useEffect(() => {
     const fetchMenuItems = async () => {
@@ -162,11 +189,13 @@ export default function BrowseMenuPage() {
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6">
           {categories.map((category) => (
-            <button
+            <motion.button
               type="button"
               key={category.name}
               onClick={() => setSelectedCategory(category.filter)}
-              className={`group flex flex-col items-center rounded-2xl border p-5 text-center shadow-sm transition hover:-translate-y-1 hover:shadow-md ${
+              whileHover={prefersReducedMotion ? undefined : { y: -3, scale: 1.02 }}
+              whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+              className={`group flex flex-col items-center rounded-2xl border p-5 text-center shadow-sm transition hover:shadow-md ${
                 selectedCategory === category.filter
                   ? "border-[#e62e20] bg-[#fff1ed]"
                   : "border-[#eee5db] bg-white hover:border-[#e62e20]"
@@ -185,7 +214,7 @@ export default function BrowseMenuPage() {
               <h3 className="text-sm font-bold text-[#292929] transition group-hover:text-[#e62e20]">
                 {category.name}
               </h3>
-            </button>
+            </motion.button>
           ))}
         </div>
       </section>
@@ -271,14 +300,16 @@ export default function BrowseMenuPage() {
               of {pizzas.length} pizzas
             </p>
 
-            <button
+            <motion.button
               type="button"
               onClick={resetFilters}
+              whileHover={prefersReducedMotion ? undefined : { scale: 1.03 }}
+              whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
               className="flex items-center gap-1.5 text-sm font-semibold text-[#e62e20] transition hover:text-[#c9251a]"
             >
               <X size={16} />
               Clear Filters
-            </button>
+            </motion.button>
           </div>
         </div>
 
@@ -299,11 +330,19 @@ export default function BrowseMenuPage() {
             </p>
           </div>
         ) : filteredPizzas.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <motion.div
+            className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            variants={cardContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.1 }}
+          >
             {filteredPizzas.map((pizza) => (
-              <div
+              <motion.div
                 key={pizza._id}
-                className="group overflow-hidden rounded-2xl border border-[#eee5db] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+                variants={cardItem}
+                whileHover={prefersReducedMotion ? undefined : { y: -4, scale: 1.01 }}
+                className="group overflow-hidden rounded-2xl border border-[#eee5db] bg-white shadow-sm transition duration-300 hover:shadow-lg"
               >
                 <div className="relative h-56 overflow-hidden bg-[#fff8f3]">
                   <MenuItemImage
@@ -350,9 +389,9 @@ export default function BrowseMenuPage() {
                     </Link>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         ) : (
           <div className="rounded-2xl border border-dashed border-[#e8d8ca] bg-white px-5 py-16 text-center">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#fff1ed]">
@@ -367,13 +406,15 @@ export default function BrowseMenuPage() {
               We couldn&apos;t find any pizzas matching your filters.
             </p>
 
-            <button
+            <motion.button
               type="button"
               onClick={resetFilters}
+              whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
+              whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
               className="mt-5 rounded-lg bg-[#e62e20] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#c9251a]"
             >
               Clear Filters
-            </button>
+            </motion.button>
           </div>
         )}
       </section>

@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import {
     ArrowLeft,
     CalendarDays,
@@ -55,6 +56,20 @@ export default function OrderDetailsPage() {
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const prefersReducedMotion = useReducedMotion() ?? false;
+
+    const pageFade: Variants = {
+        hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 16 },
+        show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.45, ease: "easeOut" } },
+    };
+    const stagger: Variants = {
+        hidden: {},
+        show: { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.08, delayChildren: prefersReducedMotion ? 0 : 0.05 } },
+    };
+    const itemFade: Variants = {
+        hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 12 },
+        show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.35, ease: "easeOut" } },
+    };
 
     useEffect(() => {
         if (isPending) return;
@@ -161,8 +176,15 @@ export default function OrderDetailsPage() {
         },
     ];
 
+    const MotionLink = motion.create(Link);
+
     return (
-        <div className="mx-auto max-w-6xl space-y-7">
+        <motion.div
+            className="mx-auto max-w-6xl space-y-7"
+            variants={pageFade}
+            initial="hidden"
+            animate="show"
+        >
             <div>
                 <Link prefetch={false}
                     href="/customer/orders"
@@ -204,7 +226,12 @@ export default function OrderDetailsPage() {
 
             <div className="grid gap-6 lg:grid-cols-3">
                 <div className="space-y-6 lg:col-span-2">
-                    <section className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm sm:p-6">
+                    <motion.section
+                        variants={itemFade}
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true, amount: 0.15 }}
+                        className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm sm:p-6">
                         <div className="flex items-center gap-3 border-b border-orange-100 pb-5">
                             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50">
                                 <Pizza size={25} className="text-[#e62e20]" />
@@ -246,9 +273,14 @@ export default function OrderDetailsPage() {
                                 </p>
                             </div>
                         </div>
-                    </section>
+                    </motion.section>
 
-                    <section className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm sm:p-6">
+                    <motion.section
+                        variants={itemFade}
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true, amount: 0.15 }}
+                        className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm sm:p-6">
                         <h2 className="text-lg font-extrabold text-gray-900">
                             Order Timeline
                         </h2>
@@ -285,9 +317,14 @@ export default function OrderDetailsPage() {
                                 );
                             })}
                         </div>
-                    </section>
+                    </motion.section>
 
-                    <section className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm sm:p-6">
+                    <motion.section
+                        variants={itemFade}
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true, amount: 0.15 }}
+                        className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm sm:p-6">
                         <h2 className="text-lg font-extrabold text-gray-900">
                             Delivery Information
                         </h2>
@@ -334,7 +371,7 @@ export default function OrderDetailsPage() {
                                 </p>
                             </div>
                         )}
-                    </section>
+                    </motion.section>
                 </div>
 
                 <aside className="h-fit rounded-2xl border border-orange-100 bg-white p-5 shadow-sm sm:p-6">
@@ -372,15 +409,17 @@ export default function OrderDetailsPage() {
                         </div>
                     )}
 
-                    <Link prefetch={false}
+                    <MotionLink prefetch={false}
                         href="/customer/orders"
+                        whileHover={prefersReducedMotion ? undefined : { scale: 1.01 }}
+                        whileTap={prefersReducedMotion ? undefined : { scale: 0.99 }}
                         className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#e62e20] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#c92318]"
                     >
                         <ArrowLeft size={17} />
                         Back to My Orders
-                    </Link>
+                    </MotionLink>
                 </aside>
             </div>
-        </div>
+        </motion.div>
     );
 }

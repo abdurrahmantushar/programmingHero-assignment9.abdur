@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import {
   MapPin,
   Plus,
@@ -58,6 +59,10 @@ export default function CustomerAddressesPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const prefersReducedMotion = useReducedMotion() ?? false;
+  const pageFade: Variants = { hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 16 }, show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.45, ease: "easeOut" } } };
+  const stagger: Variants = { hidden: {}, show: { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.07, delayChildren: prefersReducedMotion ? 0 : 0.04 } } };
+  const itemFade: Variants = { hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 12 }, show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.35, ease: "easeOut" } } };
 
   const customerId = session?.user?.id;
 
@@ -231,7 +236,7 @@ export default function CustomerAddressesPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-8">
+    <motion.div className="mx-auto w-full max-w-6xl space-y-8" variants={pageFade} initial="hidden" animate="show">
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
         <div>
           <div className="mb-2 flex items-center gap-2 text-sm font-medium text-red-600">
@@ -594,6 +599,6 @@ export default function CustomerAddressesPage() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

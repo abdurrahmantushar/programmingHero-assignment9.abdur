@@ -2,6 +2,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import {
   Check,
   Crown,
@@ -40,6 +41,10 @@ export default function VendorSubscriptionPage() {
     useState<SubscriptionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const prefersReducedMotion = useReducedMotion() ?? false;
+  const pageFade: Variants = { hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 16 }, show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.45, ease: "easeOut" } } };
+  const stagger: Variants = { hidden: {}, show: { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.07, delayChildren: prefersReducedMotion ? 0 : 0.04 } } };
+  const itemFade: Variants = { hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 12 }, show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.35, ease: "easeOut" } } };
 
   const fetchSubscription = useCallback(async () => {
     if (!session?.user?.id) return;
@@ -177,7 +182,7 @@ const handleUpgrade = async () => {
       : 0;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8">
+    <motion.div className="mx-auto max-w-7xl space-y-8" variants={pageFade} initial="hidden" animate="show">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">
@@ -197,7 +202,11 @@ const handleUpgrade = async () => {
         </button>
       </div>
 
-      <div
+      <motion.div
+        variants={itemFade}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.12 }}
         className={`relative overflow-hidden rounded-3xl p-6 text-white shadow-lg sm:p-8 ${
           isPremium
             ? "bg-gradient-to-r from-[#7c3aed] via-[#a855f7] to-[#c084fc]"
@@ -258,7 +267,7 @@ const handleUpgrade = async () => {
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <div>
         <div className="mb-6 text-center">
@@ -482,6 +491,6 @@ const handleUpgrade = async () => {
           </p>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

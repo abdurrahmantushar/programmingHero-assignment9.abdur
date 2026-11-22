@@ -14,6 +14,7 @@ import {
   MapPin,
   CalendarDays,
 } from "lucide-react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { authClient } from "@/lib/auth-client";
 import { authFetch } from "@/lib/auth-fetch";
 
@@ -51,6 +52,35 @@ export default function CustomerDashboardPage() {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const prefersReducedMotion = useReducedMotion() ?? false;
+
+  const pageFade: Variants = {
+    hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 18 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: prefersReducedMotion ? 0 : 0.45, ease: "easeOut" },
+    },
+  };
+
+  const stagger: Variants = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: prefersReducedMotion ? 0 : 0.1,
+        delayChildren: prefersReducedMotion ? 0 : 0.05,
+      },
+    },
+  };
+
+  const cardItem: Variants = {
+    hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 16 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: prefersReducedMotion ? 0 : 0.4, ease: "easeOut" },
+    },
+  };
 
   useEffect(() => {
     if (isPending) return;
@@ -149,8 +179,15 @@ export default function CustomerDashboardPage() {
     );
   }
 
+  const MotionLink = motion.create(Link);
+
   return (
-    <div className="mx-auto max-w-7xl space-y-8">
+    <motion.div
+      className="mx-auto max-w-7xl space-y-8"
+      variants={pageFade}
+      initial="hidden"
+      animate="show"
+    >
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#e62e20] to-[#f15b35] p-6 text-white shadow-lg sm:p-9">
         <div className="relative z-10 max-w-2xl">
           <p className="mb-3 text-sm font-medium text-white/80">
@@ -166,13 +203,15 @@ export default function CustomerDashboardPage() {
             favorite pizza.
           </p>
 
-          <Link
+          <MotionLink
             href="/menu"
+            whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
+            whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
             className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-[#e62e20] transition hover:bg-orange-50"
           >
             Explore Menu
             <ArrowUpRight size={18} />
-          </Link>
+          </MotionLink>
         </div>
 
         <Pizza
@@ -191,14 +230,22 @@ export default function CustomerDashboardPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <motion.div
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.2 }}
+        >
           {stats.map((stat) => {
             const Icon = stat.icon;
 
             return (
-              <div
+              <motion.div
                 key={stat.title}
-                className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+                variants={cardItem}
+                whileHover={prefersReducedMotion ? undefined : { y: -4 }}
+                className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition hover:shadow-md"
               >
                 <div className="flex items-center justify-between">
                   <div
@@ -220,14 +267,20 @@ export default function CustomerDashboardPage() {
                 <p className="mt-1 text-xs text-gray-400">
                   {stat.description}
                 </p>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </section>
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <div className="overflow-hidden rounded-2xl border border-orange-100 bg-white xl:col-span-2">
+        <motion.div
+          variants={pageFade}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.15 }}
+          className="overflow-hidden rounded-2xl border border-orange-100 bg-white xl:col-span-2"
+        >
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-orange-100 p-5 sm:px-6">
             <div>
               <h2 className="text-lg font-extrabold text-gray-900">
@@ -238,14 +291,16 @@ export default function CustomerDashboardPage() {
               </p>
             </div>
 
-            <Link
+            <MotionLink
               prefetch={false}
               href="/customer/orders"
+              whileHover={prefersReducedMotion ? undefined : { x: 2 }}
+              whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
               className="inline-flex items-center gap-2 text-sm font-bold text-[#e62e20] hover:underline"
             >
               View All
               <ArrowRight size={16} />
-            </Link>
+            </MotionLink>
           </div>
 
           {!dashboard?.recentOrders.length ? (
@@ -254,12 +309,14 @@ export default function CustomerDashboardPage() {
               <p className="mt-3 font-semibold text-gray-700">
                 No orders yet
               </p>
-              <Link
+              <MotionLink
                 href="/menu"
+                whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
+                whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
                 className="mt-3 inline-block text-sm font-bold text-[#e62e20]"
               >
                 Explore Menu
-              </Link>
+              </MotionLink>
             </div>
           ) : (
             <div className="divide-y divide-orange-50">
@@ -302,20 +359,22 @@ export default function CustomerDashboardPage() {
                       </span>
                     </div>
 
-                    <Link
+                    <MotionLink
                       prefetch={false}
                       href={`/customer/orders/${order._id}`}
+                      whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }}
+                      whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }}
                       className="rounded-lg border border-orange-200 p-2 text-gray-500 transition hover:border-[#e62e20] hover:text-[#e62e20]"
                       aria-label="View order details"
                     >
                       <ArrowUpRight size={18} />
-                    </Link>
+                    </MotionLink>
                   </div>
                 </div>
               ))}
             </div>
           )}
-        </div>
+        </motion.div>
 
         <div className="space-y-5">
           <div className="rounded-2xl border border-orange-100 bg-white p-5 sm:p-6">
@@ -324,8 +383,10 @@ export default function CustomerDashboardPage() {
             </h2>
 
             <div className="mt-5 space-y-3">
-              <Link
+              <MotionLink
                 href="/menu"
+                whileHover={prefersReducedMotion ? undefined : { x: 3 }}
+                whileTap={prefersReducedMotion ? undefined : { scale: 0.99 }}
                 className="flex items-center gap-3 rounded-xl bg-orange-50 p-4 transition hover:bg-orange-100"
               >
                 <Pizza className="text-[#e62e20]" size={22} />
@@ -338,11 +399,13 @@ export default function CustomerDashboardPage() {
                   </p>
                 </div>
                 <ArrowRight size={17} className="text-gray-400" />
-              </Link>
+              </MotionLink>
 
-              <Link
+              <MotionLink
                 prefetch={false}
                 href="/customer/addresses"
+                whileHover={prefersReducedMotion ? undefined : { x: 3 }}
+                whileTap={prefersReducedMotion ? undefined : { scale: 0.99 }}
                 className="flex items-center gap-3 rounded-xl bg-orange-50 p-4 transition hover:bg-orange-100"
               >
                 <MapPin className="text-[#e62e20]" size={22} />
@@ -355,11 +418,13 @@ export default function CustomerDashboardPage() {
                   </p>
                 </div>
                 <ArrowRight size={17} className="text-gray-400" />
-              </Link>
+              </MotionLink>
 
-              <Link
+              <MotionLink
                 prefetch={false}
                 href="/customer/orders"
+                whileHover={prefersReducedMotion ? undefined : { x: 3 }}
+                whileTap={prefersReducedMotion ? undefined : { scale: 0.99 }}
                 className="flex items-center gap-3 rounded-xl bg-orange-50 p-4 transition hover:bg-orange-100"
               >
                 <ShoppingBag className="text-[#e62e20]" size={22} />
@@ -372,7 +437,7 @@ export default function CustomerDashboardPage() {
                   </p>
                 </div>
                 <ArrowRight size={17} className="text-gray-400" />
-              </Link>
+              </MotionLink>
             </div>
           </div>
 
@@ -386,16 +451,18 @@ export default function CustomerDashboardPage() {
               Discover something delicious and place your next order.
             </p>
 
-            <Link
+            <MotionLink
               href="/menu"
+              whileHover={prefersReducedMotion ? undefined : { x: 2 }}
+              whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
               className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-[#e62e20] hover:underline"
             >
               Order Now
               <ArrowRight size={17} />
-            </Link>
+            </MotionLink>
           </div>
         </div>
       </section>
-    </div>
+    </motion.div>
   );
 }

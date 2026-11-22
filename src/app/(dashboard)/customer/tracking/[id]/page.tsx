@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import {
   ArrowLeft,
   CalendarDays,
@@ -49,6 +50,20 @@ export default function OrderTrackingPage({
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const prefersReducedMotion = useReducedMotion() ?? false;
+
+  const pageFade: Variants = {
+    hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 16 },
+    show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.45, ease: "easeOut" } },
+  };
+  const stagger: Variants = {
+    hidden: {},
+    show: { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.08, delayChildren: prefersReducedMotion ? 0 : 0.05 } },
+  };
+  const itemFade: Variants = {
+    hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 12 },
+    show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.35, ease: "easeOut" } },
+  };
 
   useEffect(() => {
     params.then(({ id }) => setOrderId(id));
@@ -176,8 +191,15 @@ export default function OrderTrackingPage({
     },
   ];
 
+  const MotionLink = motion.create(Link);
+
   return (
-    <div className="mx-auto max-w-6xl space-y-7">
+    <motion.div
+      className="mx-auto max-w-6xl space-y-7"
+      variants={pageFade}
+      initial="hidden"
+      animate="show"
+    >
       <div>
         <Link prefetch={false}
           href={`/customer/orders/${order._id}`}
@@ -431,13 +453,15 @@ export default function OrderTrackingPage({
         </div>
       </div>
 
-      <Link prefetch={false}
+      <MotionLink prefetch={false}
         href={`/customer/orders/${order._id}`}
+        whileHover={prefersReducedMotion ? undefined : { x: -2 }}
+        whileTap={prefersReducedMotion ? undefined : { scale: 0.99 }}
         className="inline-flex items-center gap-2 rounded-xl border border-orange-200 bg-white px-5 py-3 text-sm font-bold text-[#e62e20] transition hover:bg-orange-50"
       >
         <ArrowLeft size={17} />
         Back to Order Details
-      </Link>
-    </div>
+      </MotionLink>
+    </motion.div>
   );
 }

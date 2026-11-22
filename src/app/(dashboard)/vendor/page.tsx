@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -27,6 +28,10 @@ export default function AddMenuItemPage() {
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const prefersReducedMotion = useReducedMotion() ?? false;
+  const pageFade: Variants = { hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 16 }, show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.45, ease: "easeOut" } } };
+  const stagger: Variants = { hidden: {}, show: { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.07, delayChildren: prefersReducedMotion ? 0 : 0.04 } } };
+  const itemFade: Variants = { hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 12 }, show: { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.35, ease: "easeOut" } } };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -152,7 +157,7 @@ export default function AddMenuItemPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl space-y-7">
+    <motion.div className="mx-auto max-w-5xl space-y-7" variants={pageFade} initial="hidden" animate="show">
       <div>
         <Link prefetch={false}
           href="/vendor/menu"
@@ -384,6 +389,6 @@ export default function AddMenuItemPage() {
           </button>
         </div>
       </form>
-    </div>
+    </motion.div>
   );
 }

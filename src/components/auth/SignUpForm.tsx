@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Store, Eye, EyeOff, Mail, User } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import toast from "react-hot-toast";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 
 export default function SignUpForm() {
     const router = useRouter();
@@ -24,6 +25,36 @@ export default function SignUpForm() {
         password: "",
         confirmPassword: "",
     });
+
+    const prefersReducedMotion = useReducedMotion() ?? false;
+
+    const cardVariants: Variants = {
+        hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 20 },
+        show: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: prefersReducedMotion ? 0 : 0.5, ease: "easeOut" },
+        },
+    };
+
+    const stagger: Variants = {
+        hidden: {},
+        show: {
+            transition: {
+                staggerChildren: prefersReducedMotion ? 0 : 0.07,
+                delayChildren: prefersReducedMotion ? 0 : 0.08,
+            },
+        },
+    };
+
+    const item: Variants = {
+        hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 14 },
+        show: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: prefersReducedMotion ? 0 : 0.4, ease: "easeOut" },
+        },
+    };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -83,7 +114,10 @@ export default function SignUpForm() {
     
 
     return (
-        <div
+        <motion.div
+            variants={cardVariants}
+            initial="hidden"
+            animate="show"
             className="relative w-full max-w-[550px] overflow-hidden rounded-3xl bg-cover bg-center p-5 shadow-2xl sm:p-8"
             style={{
                 backgroundImage: "url('/images/categories/vegPizza.png')",
@@ -109,8 +143,14 @@ export default function SignUpForm() {
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
+                <motion.form
+                    onSubmit={handleSubmit}
+                    className="space-y-4"
+                    variants={stagger}
+                    initial="hidden"
+                    animate="show"
+                >
+                    <motion.div variants={item}>
                         <label className="mb-2 block text-sm font-semibold text-white">
                             Full Name
                         </label>
@@ -129,9 +169,9 @@ export default function SignUpForm() {
                                 className="h-12 w-full bg-transparent text-sm text-[#25211E] outline-none placeholder:text-[#99918A]"
                             />
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <div>
+                    <motion.div variants={item}>
                         <label className="mb-2 block text-sm font-semibold text-white">
                             Email Address
                         </label>
@@ -150,17 +190,19 @@ export default function SignUpForm() {
                                 className="h-12 w-full bg-transparent text-sm text-[#25211E] outline-none placeholder:text-[#99918A]"
                             />
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <div>
+                    <motion.div variants={item}>
                         <label className="mb-3 block text-sm font-semibold text-white">
                             Select Your Role
                         </label>
 
                         <div className="grid grid-cols-2 gap-3">
-                            <button
+                            <motion.button
                                 type="button"
                                 onClick={() => setRole("customer")}
+                                whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
+                                whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
                                 className={`rounded-xl border p-4 text-center transition ${
                                     role === "customer"
                                         ? "border-[#E6392E] bg-[#E6392E] text-white shadow-lg"
@@ -174,11 +216,13 @@ export default function SignUpForm() {
                                 }`}>
                                     Order your favorite food
                                 </p>
-                            </button>
+                            </motion.button>
 
-                            <button
+                            <motion.button
                                 type="button"
                                 onClick={() => setRole("vendor")}
+                                whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
+                                whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
                                 className={`rounded-xl border p-4 text-center transition ${
                                     role === "vendor"
                                         ? "border-[#E6392E] bg-[#E6392E] text-white shadow-lg"
@@ -192,11 +236,11 @@ export default function SignUpForm() {
                                 }`}>
                                     Manage your restaurant
                                 </p>
-                            </button>
+                            </motion.button>
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <div>
+                    <motion.div variants={item}>
                         <label className="mb-2 block text-sm font-semibold text-white">
                             Password
                         </label>
@@ -223,9 +267,9 @@ export default function SignUpForm() {
                                 {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
                             </button>
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <div>
+                    <motion.div variants={item}>
                         <label className="mb-2 block text-sm font-semibold text-white">
                             Confirm Password
                         </label>
@@ -261,9 +305,9 @@ export default function SignUpForm() {
                                 )}
                             </button>
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <label className="flex items-start gap-2 pt-1 text-sm font-medium text-white">
+                    <motion.label variants={item} className="flex items-start gap-2 pt-1 text-sm font-medium text-white">
                         <input
                             type="checkbox"
                             required
@@ -278,22 +322,25 @@ export default function SignUpForm() {
                                 Terms & Conditions
                             </Link>
                         </span>
-                    </label>
+                    </motion.label>
 
                     {error && (
-                        <p className="rounded-lg bg-red-600/90 px-3 py-2 text-sm text-white">
+                        <motion.p variants={item} className="rounded-lg bg-red-600/90 px-3 py-2 text-sm text-white">
                             {error}
-                        </p>
+                        </motion.p>
                     )}
 
-                    <button
+                    <motion.button
+                        variants={item}
                         type="submit"
                         disabled={loading}
+                        whileHover={prefersReducedMotion || loading ? undefined : { scale: 1.01 }}
+                        whileTap={prefersReducedMotion || loading ? undefined : { scale: 0.99 }}
                         className="w-full rounded-xl bg-[#E6392E] py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-[#C9251A] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         {loading ? "Creating Account..." : "Create Account"}
-                    </button>
-                </form>
+                    </motion.button>
+                </motion.form>
 
                 <div className="my-5 flex items-center gap-4">
                     <div className="h-px flex-1 bg-white/50" />
@@ -303,15 +350,17 @@ export default function SignUpForm() {
                     <div className="h-px flex-1 bg-white/50" />
                 </div>
 
-                    <button
-                    type="button"
-                    onClick={handleGoogleSignIn}
-                    disabled={googleLoading}
-                    className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#EEE5DB] bg-white py-3 text-sm font-semibold text-[#25211E] transition hover:bg-[#FFF8F0] disabled:cursor-not-allowed disabled:opacity-60"
+                    <motion.button
+                        type="button"
+                        onClick={handleGoogleSignIn}
+                        disabled={googleLoading}
+                        whileHover={prefersReducedMotion || googleLoading ? undefined : { scale: 1.01 }}
+                        whileTap={prefersReducedMotion || googleLoading ? undefined : { scale: 0.99 }}
+                        className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#EEE5DB] bg-white py-3 text-sm font-semibold text-[#25211E] transition hover:bg-[#FFF8F0] disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                    <span className="text-lg font-bold text-[#4285F4]">G</span>
-                    {googleLoading ? "Connecting to Google..." : "Continue with Google"}
-                    </button>
+                        <span className="text-lg font-bold text-[#4285F4]">G</span>
+                        {googleLoading ? "Connecting to Google..." : "Continue with Google"}
+                    </motion.button>
 
                 <p className="mt-6 text-center text-sm font-medium text-white">
                     Already have an account?{" "}
@@ -323,6 +372,6 @@ export default function SignUpForm() {
                     </Link>
                 </p>
             </div>
-        </div>
+        </motion.div>
     );
 }

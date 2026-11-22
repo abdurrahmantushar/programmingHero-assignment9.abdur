@@ -1,10 +1,13 @@
 
+"use client";
+
 import {
   Store,
   Pizza,
   MapPin,
   Bike,
-} from "lucide-react";;
+} from "lucide-react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 
 const steps = [
   {
@@ -34,6 +37,48 @@ const steps = [
 ];
 
 export default function HowItWorks() {
+  const prefersReducedMotion = useReducedMotion() ?? false;
+
+  const container: Variants = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: prefersReducedMotion ? 0 : 0.12,
+        delayChildren: prefersReducedMotion ? 0 : 0.05,
+      },
+    },
+  };
+
+  const stepCard: Variants = {
+    hidden: {
+      opacity: prefersReducedMotion ? 1 : 0,
+      y: prefersReducedMotion ? 0 : 24,
+    },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: prefersReducedMotion ? 0 : 0.5,
+        ease: "easeOut",
+      },
+    },
+  };
+
+  const iconScale: Variants = {
+    hidden: {
+      opacity: prefersReducedMotion ? 1 : 0,
+      scale: prefersReducedMotion ? 1 : 0.85,
+    },
+    show: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: prefersReducedMotion ? 0 : 0.45,
+        ease: "easeOut",
+      },
+    },
+  };
+
   return (
     <section
       id="how-it-works"
@@ -50,23 +95,34 @@ export default function HowItWorks() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+        <motion.div
+          className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8"
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.2 }}
+        >
           {steps.map((step) => {
             const Icon = step.icon;
 
             return (
-              <div
+              <motion.div
                 key={step.number}
+                variants={stepCard}
+                whileHover={prefersReducedMotion ? undefined : { y: -4 }}
                 className="group relative flex flex-col items-center text-center"
               >
                 <div className="relative mb-6">
-                  <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-dashed border-[#F2B8A8] bg-white transition-all duration-300 group-hover:border-[#E6392E] group-hover:bg-[#FFF0EA]">
+                  <motion.div
+                    variants={iconScale}
+                    className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-dashed border-[#F2B8A8] bg-white transition-all duration-300 group-hover:border-[#E6392E] group-hover:bg-[#FFF0EA]"
+                  >
                     <Icon
                       size={38}
                       strokeWidth={1.7}
                       className="text-[#E6392E]"
                     />
-                  </div>
+                  </motion.div>
 
                   <span className="absolute -right-2 -top-2 flex h-9 w-9 items-center justify-center rounded-full bg-[#E6392E] text-xs font-bold text-white shadow-md">
                     {step.number}
@@ -80,10 +136,10 @@ export default function HowItWorks() {
                 <p className="max-w-[260px] text-sm leading-7 text-[#77716B]">
                   {step.description}
                 </p>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

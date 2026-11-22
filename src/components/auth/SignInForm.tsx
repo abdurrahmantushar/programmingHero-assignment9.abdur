@@ -7,6 +7,7 @@ import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,6 +19,36 @@ export default function SignInForm() {
     email: "",
     password: "",
   });
+
+  const prefersReducedMotion = useReducedMotion() ?? false;
+
+  const cardVariants: Variants = {
+    hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: prefersReducedMotion ? 0 : 0.5, ease: "easeOut" },
+    },
+  };
+
+  const stagger: Variants = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: prefersReducedMotion ? 0 : 0.08,
+        delayChildren: prefersReducedMotion ? 0 : 0.08,
+      },
+    },
+  };
+
+  const item: Variants = {
+    hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 14 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: prefersReducedMotion ? 0 : 0.4, ease: "easeOut" },
+    },
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
@@ -91,8 +122,10 @@ export default function SignInForm() {
   };
 
   return (
-
-    <div
+    <motion.div
+      variants={cardVariants}
+      initial="hidden"
+      animate="show"
       className="relative w-full max-w-md overflow-hidden rounded-3xl bg-cover bg-center p-5 shadow-2xl sm:p-8"
       style={{
         backgroundImage: "url('/images/categories/vegPizza.png')",
@@ -116,8 +149,14 @@ export default function SignInForm() {
           </p>
         </div>
 
-        <form className="space-y-5" onSubmit={handleSubmit}>
-          <div>
+        <motion.form
+          className="space-y-5"
+          onSubmit={handleSubmit}
+          variants={stagger}
+          initial="hidden"
+          animate="show"
+        >
+          <motion.div variants={item}>
             <label className="mb-2 block text-sm font-semibold text-white">
               Email Address
             </label>
@@ -135,9 +174,9 @@ export default function SignInForm() {
                 className="h-12 w-full bg-transparent text-sm outline-none placeholder:text-[#AAA39C]"
               />
             </div>
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div variants={item}>
             <label className="mb-2 block text-sm font-semibold text-white">
               Password
             </label>
@@ -164,9 +203,9 @@ export default function SignInForm() {
                 {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
               </button>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="flex items-center justify-between text-sm">
+          <motion.div variants={item} className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2 text-white">
               <input
                 type="checkbox"
@@ -181,19 +220,28 @@ export default function SignInForm() {
             >
               Forgot Password?
             </Link>
-          </div>
+          </motion.div>
 
-          <button
+          <motion.button
+            variants={item}
             type="submit"
             disabled={loading}
+            whileHover={prefersReducedMotion || loading ? undefined : { scale: 1.01 }}
+            whileTap={prefersReducedMotion || loading ? undefined : { scale: 0.99 }}
             className="w-full rounded-xl bg-[#E6392E] py-3.5 text-sm font-bold text-white transition hover:bg-[#C9251A] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "Signing In..." : "Sign In"}
-          </button>
-        </form>
+          </motion.button>
+        </motion.form>
 
 
-        <div className="my-5 rounded-xl border border-[#EEE5DB] bg-white/95 p-4 shadow-sm transition-colors dark:border-white/10 dark:bg-[#25211E]/90">
+        <motion.div
+          variants={item}
+          initial="hidden"
+          animate="show"
+          transition={{ delay: prefersReducedMotion ? 0 : 0.35, duration: prefersReducedMotion ? 0 : 0.4, ease: "easeOut" }}
+          className="my-5 rounded-xl border border-[#EEE5DB] bg-white/95 p-4 shadow-sm transition-colors dark:border-white/10 dark:bg-[#25211E]/90"
+        >
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-bold text-[#25211E] dark:text-white">
               Demo Admin Access
@@ -223,7 +271,7 @@ export default function SignInForm() {
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
 
         <div className="my-6 flex items-center gap-4">
@@ -234,15 +282,17 @@ export default function SignInForm() {
           <div className="h-px flex-1 bg-[#EEE5DB]" />
         </div>
 
-        <button
+        <motion.button
           type="button"
           onClick={handleGoogleSignIn}
           disabled={googleLoading}
+          whileHover={prefersReducedMotion || googleLoading ? undefined : { scale: 1.01 }}
+          whileTap={prefersReducedMotion || googleLoading ? undefined : { scale: 0.99 }}
           className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#EEE5DB] bg-white py-3 text-sm font-semibold text-[#25211E] transition hover:bg-[#FFF8F0] disabled:cursor-not-allowed disabled:opacity-60"
         >
           <span className="text-lg font-bold text-[#4285F4]">G</span>
           {googleLoading ? "Connecting to Google..." : "Continue with Google"}
-        </button>
+        </motion.button>
 
         <p className="mt-7 text-center text-sm text-[#77716B]">
           Don't have an account?{" "}
@@ -254,7 +304,6 @@ export default function SignInForm() {
           </Link>
         </p>
       </div>
-    </div>
-
+    </motion.div>
   );
 }
