@@ -17,6 +17,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import MenuItemImage from "@/app/components/shared/MenuItemImage";
 import toast from "react-hot-toast";
+import { normalizeCategory } from "@/constants/categories";
 
 interface MenuItem {
   _id: string;
@@ -308,7 +309,7 @@ export default function PizzaDetailsPage({
                   <span className="text-sm">Category</span>
                 </div>
                 <p className="font-semibold text-[#292929]">
-                  {pizza.category}
+                  {normalizeCategory(pizza.category)}
                 </p>
               </div>
 
@@ -335,7 +336,7 @@ export default function PizzaDetailsPage({
 
           <div className="flex flex-col justify-center">
             <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-[#e62e20]">
-              {pizza.category}
+              {normalizeCategory(pizza.category)}
             </p>
 
             <h1 className="text-3xl font-bold text-[#292929] sm:text-4xl">
@@ -372,7 +373,7 @@ export default function PizzaDetailsPage({
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-gray-500">Category</span>
                   <span className="font-medium text-[#292929]">
-                    {pizza.category}
+                    {normalizeCategory(pizza.category)}
                   </span>
                 </div>
 

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import MenuItemImage from "@/app/components/shared/MenuItemImage";
+import { normalizeCategory } from "@/constants/categories";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -335,7 +336,7 @@ export default function OrderPage({
                 )}
 
                 <span className="absolute left-4 top-4 rounded-full bg-white px-4 py-2 text-xs font-bold text-[#e62e20] shadow-sm">
-                  {pizza.category}
+                  {normalizeCategory(pizza.category)}
                 </span>
               </div>
 

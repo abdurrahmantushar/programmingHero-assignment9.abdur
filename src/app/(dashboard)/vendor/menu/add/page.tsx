@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import toast from "react-hot-toast";
+import { CATEGORY_OPTIONS } from "@/constants/categories";
 import {
   ArrowLeft,
   ImagePlus,
@@ -465,11 +466,11 @@ export default function AddMenuItemPage() {
                 <option value="" disabled>
                   Select category
                 </option>
-                <option value="Veg">Veg</option>
-                <option value="Non-Veg">Non-Veg</option>
-                <option value="Special">Special</option>
-                <option value="Dessert">Dessert</option>
-                <option value="Drinks">Drinks</option>
+                {CATEGORY_OPTIONS.map((category) => (
+                  <option key={category.value} value={category.value}>
+                    {category.label}
+                  </option>
+                ))}
               </select>
             </div>
 

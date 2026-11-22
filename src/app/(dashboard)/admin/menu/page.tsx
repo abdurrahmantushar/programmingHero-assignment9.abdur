@@ -21,6 +21,7 @@ import {
   ImageIcon,
 } from "lucide-react";
 import MenuItemImage from "@/app/components/shared/MenuItemImage";
+import { normalizeCategory } from "@/constants/categories";
 
 type MenuStatus = "pending" | "approved" | "rejected";
 type StatusFilter = "all" | MenuStatus;
@@ -429,7 +430,7 @@ export default function AdminMenuPage() {
 
                     <td className="px-5 py-4">
                       <span className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium capitalize text-gray-600">
-                        {item.category || "Uncategorized"}
+                        {normalizeCategory(item.category) || "Uncategorized"}
                       </span>
                     </td>
 

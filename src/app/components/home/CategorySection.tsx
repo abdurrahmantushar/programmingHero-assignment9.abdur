@@ -1,32 +1,25 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { CATEGORIES } from "@/constants/categories";
+
+const CATEGORY_IMAGES = [
+  "/images/categories/vegPizza.png",
+  "/images/categories/nonVegPizza.png",
+  "/images/categories/sides.png",
+  "/images/categories/drinks.png",
+  "/images/categories/desserts.png",
+];
 
 const categories = [
   {
     name: "All Pizza",
     image: "/images/categories/allPizza.png",
   },
-  {
-    name: "Veg Pizza",
-    image: "/images/categories/vegPizza.png",
-  },
-  {
-    name: "Non-Veg Pizza",
-    image: "/images/categories/nonVegPizza.png",
-  },
-  {
-    name: "Sides",
-    image: "/images/categories/sides.png",
-  },
-  {
-    name: "Drinks",
-    image: "/images/categories/drinks.png",
-  },
-  {
-    name: "Desserts",
-    image: "/images/categories/desserts.png",
-  },
+  ...CATEGORIES.map((category, index) => ({
+    name: category,
+    image: CATEGORY_IMAGES[index] || "/images/categories/allPizza.png",
+  })),
 ];
 
 export default function CategorySection() {

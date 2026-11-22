@@ -6,9 +6,18 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import MenuItemImage from "@/app/components/shared/MenuItemImage";
+import { CATEGORIES, normalizeCategory } from "@/constants/categories";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+const CATEGORY_IMAGES = [
+  "/images/categories/vegPizza.png",
+  "/images/categories/nonVegPizza.png",
+  "/images/categories/sides.png",
+  "/images/categories/drinks.png",
+  "/images/categories/desserts.png",
+];
 
 const categories = [
   {
@@ -16,31 +25,11 @@ const categories = [
     image: "/images/categories/allPizza.png",
     filter: "All",
   },
-  {
-    name: "Veg Pizza",
-    image: "/images/categories/vegPizza.png",
-    filter: "Veg Pizza",
-  },
-  {
-    name: "Non-Veg Pizza",
-    image: "/images/categories/nonVegPizza.png",
-    filter: "Non-Veg Pizza",
-  },
-  {
-    name: "Sides",
-    image: "/images/categories/sides.png",
-    filter: "Sides",
-  },
-  {
-    name: "Drinks",
-    image: "/images/categories/drinks.png",
-    filter: "Drinks",
-  },
-  {
-    name: "Desserts",
-    image: "/images/categories/desserts.png",
-    filter: "Desserts",
-  },
+  ...CATEGORIES.map((category, index) => ({
+    name: category,
+    image: CATEGORY_IMAGES[index] || "/images/categories/allPizza.png",
+    filter: category,
+  })),
 ];
 
 type Pizza = {
@@ -105,7 +94,7 @@ export default function BrowseMenuPage() {
 
       const matchesCategory =
         selectedCategory === "All" ||
-        pizza.category === selectedCategory;
+        normalizeCategory(pizza.category) === selectedCategory;
 
       const matchesLocation =
         selectedLocation === "All" ||
@@ -333,7 +322,7 @@ export default function BrowseMenuPage() {
 
                 <div className="p-5">
                   <p className="text-xs font-semibold text-[#e62e20]">
-                    {pizza.category}
+                    {normalizeCategory(pizza.category)}
                   </p>
 
                   <h3 className="mt-2 text-lg font-extrabold text-[#292929]">

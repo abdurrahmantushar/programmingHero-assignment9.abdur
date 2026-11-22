@@ -11,6 +11,7 @@ import {
   Loader2,
 } from "lucide-react";
 import MenuItemImage from "@/app/components/shared/MenuItemImage";
+import { normalizeCategory } from "@/constants/categories";
 
 type MenuItem = {
   _id: string;
@@ -135,7 +136,7 @@ export default function FeaturedMenu() {
                     </h3>
 
                     <span className="shrink-0 rounded-full bg-amber-50 px-2 py-1 text-[9px] font-bold text-amber-700">
-                      {item.category}
+                      {normalizeCategory(item.category)}
                     </span>
                   </div>
 

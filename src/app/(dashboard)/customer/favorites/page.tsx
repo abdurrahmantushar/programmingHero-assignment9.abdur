@@ -14,6 +14,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import MenuItemImage from "@/app/components/shared/MenuItemImage";
 import { toast } from "sonner";
+import { normalizeCategory } from "@/constants/categories";
 
 interface Favorite {
   _id: string;
@@ -211,7 +212,7 @@ export default function FavoritesPage() {
                     )}
 
                     <span className="absolute left-4 top-4 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[#e62e20] shadow-sm">
-                      {favorite.category}
+                      {normalizeCategory(favorite.category)}
                     </span>
 
                     <button

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
+import { CATEGORY_OPTIONS } from "@/constants/categories";
 
 export default function AddMenuItemPage() {
   const router = useRouter();
@@ -215,11 +216,11 @@ export default function AddMenuItemPage() {
                 <option value="" disabled>
                   Select category
                 </option>
-                <option value="Veg">Veg</option>
-                <option value="Non-Veg">Non-Veg</option>
-                <option value="Special">Special</option>
-                <option value="Dessert">Dessert</option>
-                <option value="Drinks">Drinks</option>
+                {CATEGORY_OPTIONS.map((category) => (
+                  <option key={category.value} value={category.value}>
+                    {category.label}
+                  </option>
+                ))}
               </select>
             </div>
 

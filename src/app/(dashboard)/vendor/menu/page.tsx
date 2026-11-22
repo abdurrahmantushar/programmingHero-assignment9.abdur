@@ -18,6 +18,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import MenuItemImage from "@/app/components/shared/MenuItemImage";
 import { toast } from "sonner";
+import { CATEGORY_OPTIONS, normalizeCategory } from "@/constants/categories";
 
 type MenuItem = {
   _id: string;
@@ -126,7 +127,7 @@ export default function VendorMenuPage() {
         item.description.toLowerCase().includes(search.toLowerCase());
 
       const matchesCategory =
-        category === "all" || item.category === category;
+        category === "all" || normalizeCategory(item.category) === category;
 
       const matchesStatus =
         status === "all" || item.status === status;
@@ -260,11 +261,11 @@ export default function VendorMenuPage() {
               className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-600 outline-none focus:border-[#e62e20]"
             >
               <option value="all">All Categories</option>
-              <option value="Veg">Veg</option>
-              <option value="Non-Veg">Non-Veg</option>
-              <option value="Special">Special</option>
-              <option value="Dessert">Dessert</option>
-              <option value="Drinks">Drinks</option>
+              {CATEGORY_OPTIONS.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
             </select>
 
             <select
@@ -356,7 +357,7 @@ export default function VendorMenuPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-[#e62e20]">
-                      {item.category}
+                      {normalizeCategory(item.category)}
                     </p>
                     <h3 className="mt-1 truncate text-lg font-extrabold text-gray-900">
                       {item.itemName}
