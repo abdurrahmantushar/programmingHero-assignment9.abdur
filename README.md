@@ -10,6 +10,16 @@ Required for JWT authentication:
 
 Other required variables are listed in `.env.example`.
 
+## Demo Admin Credentials
+
+For assignment evaluation, use the following demo admin account:
+
+- **Email:** `admin@gmail.com`
+- **Password:** `qwer1234`
+- **Role:** Admin
+
+> These credentials are for evaluator/demo use only. Do not use this account in production.
+
 ## Getting Started
 
 First, run the development server:

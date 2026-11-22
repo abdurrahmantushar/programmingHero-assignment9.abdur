@@ -91,6 +91,7 @@ export default function SignInForm() {
   };
 
   return (
+
     <div
       className="relative w-full max-w-md overflow-hidden rounded-3xl bg-cover bg-center p-5 shadow-2xl sm:p-8"
       style={{
@@ -191,6 +192,40 @@ export default function SignInForm() {
           </button>
         </form>
 
+
+        <div className="my-5 rounded-xl border border-[#EEE5DB] bg-white/95 p-4 shadow-sm transition-colors dark:border-white/10 dark:bg-[#25211E]/90">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-bold text-[#25211E] dark:text-white">
+              Demo Admin Access
+            </h3>
+
+            <span className="rounded-full bg-[#E6392E]/10 px-2.5 py-1 text-xs font-semibold text-[#E6392E] dark:bg-[#E6392E]/20 dark:text-[#FF7770]">
+              Admin
+            </span>
+          </div>
+
+          <div className="space-y-3 text-sm">
+            <div>
+              <p className="text-xs font-medium text-[#99918A] dark:text-[#AAA39C]">
+                Email
+              </p>
+              <p className="font-semibold text-[#25211E] dark:text-[#F7F3EF]">
+                admin@gmail.com
+              </p>
+            </div>
+
+            <div>
+              <p className="text-xs font-medium text-[#99918A] dark:text-[#AAA39C]">
+                Password
+              </p>
+              <p className="font-semibold text-[#25211E] dark:text-[#F7F3EF]">
+                qwer1234
+              </p>
+            </div>
+          </div>
+        </div>
+
+
         <div className="my-6 flex items-center gap-4">
           <div className="h-px flex-1 bg-[#EEE5DB]" />
           <span className="text-xs font-medium text-[#99918A]">
@@ -220,5 +255,6 @@ export default function SignInForm() {
         </p>
       </div>
     </div>
+
   );
 }
