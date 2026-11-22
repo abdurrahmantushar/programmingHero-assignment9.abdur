@@ -14,14 +14,12 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import ThemeToggle from "./ThemeToggle";
 import toast from "react-hot-toast";
 
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "Browse Menu", href: "/browse-menu" },
-  { name: "About Us", href: "/about" },
-  { name: "How It Works", href: "/#how-it-works" },
-  { name: "Contact", href: "/contact" },
 ];
 
 export default function Navbar() {
@@ -31,10 +29,11 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [failedImage, setFailedImage] = useState<string | null>(null);
   const profileMenuRef = useRef<HTMLElement>(null);
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
-
+  const avatarSrc = user?.image?.trim() || null;
   const handleLogout = async () => {
     try {
       setLoggingOut(true);
@@ -63,7 +62,7 @@ export default function Navbar() {
     return pathname === href;
   };
 
-    useEffect(() => {
+  useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
       if (
         profileMenuRef.current &&
@@ -81,11 +80,11 @@ export default function Navbar() {
   }, []);
 
   const dashboardUrl =
-  session?.user?.role === "admin"
-    ? "/admin"
-    : session?.user?.role === "vendor"
-      ? "/vendor"
-      : "/customer";
+    session?.user?.role === "admin"
+      ? "/admin"
+      : session?.user?.role === "vendor"
+        ? "/vendor"
+        : "/customer";
   return (
     <header
       ref={profileMenuRef}
@@ -110,11 +109,10 @@ export default function Navbar() {
             <Link
               key={link.name}
               href={link.href}
-              className={`relative flex h-full items-center text-[14px] font-semibold transition-colors ${
-                isActive(link.href)
-                  ? "text-[#e62e20] after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:bg-[#e62e20]"
-                  : "text-[#292929] hover:text-[#e62e20]"
-              }`}
+              className={`relative flex h-full items-center text-[14px] font-semibold transition-colors ${isActive(link.href)
+                ? "text-[#e62e20] after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:bg-[#e62e20]"
+                : "text-[#292929] hover:text-[#e62e20]"
+                }`}
             >
               {link.name}
             </Link>
@@ -122,6 +120,8 @@ export default function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
+          <ThemeToggle />
+
           {!isPending &&
             (user ? (
               <div className="relative">
@@ -131,10 +131,25 @@ export default function Navbar() {
                   className="flex items-center gap-2 rounded-lg px-3 py-2 transition hover:bg-[#fff8f3]"
                   aria-expanded={profileMenuOpen}
                 >
-                  <CircleUserRound
-                    size={25}
-                    className="text-[#e62e20]"
-                  />
+{avatarSrc && failedImage !== avatarSrc ? (
+  <img
+    src={avatarSrc}
+    alt={user.name || "User"}
+    width={40}
+    height={40}
+    referrerPolicy="no-referrer"
+    onError={() => {
+      console.log("Google profile image failed:", avatarSrc);
+      setFailedImage(avatarSrc);
+    }}
+    className="h-10 w-10 rounded-full border border-[#eee5db] object-cover"
+  />
+) : (
+  <CircleUserRound
+    size={25}
+    className="text-[#e62e20]"
+  />
+)}
 
                   <span className="max-w-[160px] truncate text-sm font-semibold text-[#292929]">
                     {user.name}
@@ -142,9 +157,8 @@ export default function Navbar() {
 
                   <ChevronDown
                     size={17}
-                    className={`text-[#777] transition-transform ${
-                      profileMenuOpen ? "rotate-180" : ""
-                    }`}
+                    className={`text-[#777] transition-transform ${profileMenuOpen ? "rotate-180" : ""
+                      }`}
                   />
                 </button>
 
@@ -157,7 +171,7 @@ export default function Navbar() {
                     >
                       <CircleUserRound size={18} />
                       Profile
-                    </Link>                    
+                    </Link>
                     <Link
                       href={dashboardUrl}
                       onClick={() => setProfileMenuOpen(false)}
@@ -213,17 +227,23 @@ export default function Navbar() {
 
       {isOpen && (
         <div className="border-t border-[#eee5db] bg-white px-5 py-5 lg:hidden">
+          <div className="mb-3 flex items-center justify-between px-4">
+            <span className="text-sm font-semibold text-[#292929] dark:text-gray-200">
+              Theme
+            </span>
+            <ThemeToggle />
+          </div>
+
           <nav className="flex flex-col gap-1">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
                 onClick={() => setIsOpen(false)}
-                className={`rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${
-                  isActive(link.href)
-                    ? "bg-[#fff1ed] text-[#e62e20]"
-                    : "text-[#292929] hover:bg-[#fff8f3] hover:text-[#e62e20]"
-                }`}
+                className={`rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${isActive(link.href)
+                  ? "bg-[#fff1ed] text-[#e62e20]"
+                  : "text-[#292929] hover:bg-[#fff8f3] hover:text-[#e62e20]"
+                  }`}
               >
                 {link.name}
               </Link>
@@ -241,10 +261,22 @@ export default function Navbar() {
                     aria-expanded={profileMenuOpen}
                   >
                     <span className="flex min-w-0 items-center gap-2">
-                      <CircleUserRound
-                        size={25}
-                        className="text-[#e62e20]"
-                      />
+                      {avatarSrc && failedImage !== avatarSrc ? (
+                        <Image
+                          src={avatarSrc}
+                          alt={user.name || "User"}
+                          width={25}
+                          height={25}
+                          unoptimized
+                          onError={() => setFailedImage(avatarSrc)}
+                          className="h-[25px] w-[25px] rounded-full object-cover"
+                        />
+                      ) : (
+                        <CircleUserRound
+                          size={25}
+                          className="text-[#e62e20]"
+                        />
+                      )}
 
                       <span className="min-w-0 truncate text-sm font-semibold text-[#292929]">
                         {user.name}
@@ -253,9 +285,8 @@ export default function Navbar() {
 
                     <ChevronDown
                       size={18}
-                      className={`text-[#777] transition-transform ${
-                        profileMenuOpen ? "rotate-180" : ""
-                      }`}
+                      className={`text-[#777] transition-transform ${profileMenuOpen ? "rotate-180" : ""
+                        }`}
                     />
                   </button>
 

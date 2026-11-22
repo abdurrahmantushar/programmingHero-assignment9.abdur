@@ -117,6 +117,7 @@ export default function ProfilePage() {
   const [vendorMenuItems, setVendorMenuItems] = useState<VendorMenuItem[]>([]);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [failedImage, setFailedImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const profileImage = uploadedImage ?? user?.image ?? null;
 
@@ -128,9 +129,9 @@ export default function ProfilePage() {
         if (isVendor) {
           const [dashboardResponse, subscriptionResponse, menuResponse] =
             await Promise.all([
-              fetch(`${API_URL}/api/vendor/${userId}/dashboard`),
-              fetch(`${API_URL}/api/vendor/${userId}/subscription`),
-              fetch(`${API_URL}/api/vendor/${userId}/menu-items`),
+              fetch(`${API_URL}/api/vendor/${userId}/dashboard`, { credentials: "include" }),
+              fetch(`${API_URL}/api/vendor/${userId}/subscription`, { credentials: "include" }),
+              fetch(`${API_URL}/api/vendor/${userId}/menu-items`, { credentials: "include" }),
             ]);
 
           const [dashboardResult, subscriptionResult, menuResult] =
@@ -153,8 +154,8 @@ export default function ProfilePage() {
           }
         } else if (!isAdmin) {
           const [dashboardResponse, addressesResponse] = await Promise.all([
-            fetch(`${API_URL}/api/customer/${userId}/dashboard`),
-            fetch(`${API_URL}/api/customer/${userId}/addresses`),
+            fetch(`${API_URL}/api/customer/${userId}/dashboard`, { credentials: "include" }),
+            fetch(`${API_URL}/api/customer/${userId}/addresses`, { credentials: "include" }),
           ]);
 
           const [dashboardResult, addressesResult] = await Promise.all([
@@ -382,13 +383,14 @@ export default function ProfilePage() {
               onChange={handleImageChange}
             />
             <div className="relative">
-              {profileImage ? (
+              {profileImage && failedImage !== profileImage ? (
                 <Image
                   src={profileImage}
                   alt={name}
                   width={96}
                   height={96}
                   unoptimized
+                  onError={() => setFailedImage(profileImage)}
                   className="h-24 w-24 rounded-full border-4 border-orange-100 object-cover"
                 />
               ) : (

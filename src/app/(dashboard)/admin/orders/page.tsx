@@ -91,7 +91,7 @@ export default function AdminOrdersPage() {
 
       const response = await fetch(
         `${API_URL}/api/admin/orders?${params.toString()}`,
-        { cache: "no-store" }
+        { credentials: "include", cache: "no-store" }
       );
 
       const result = await response.json();

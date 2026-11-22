@@ -65,7 +65,7 @@ export default function AddMenuItemPage() {
 
         const response = await fetch(
           `${apiUrl}/api/vendor/${session.user.id}/subscription`,
-          { cache: "no-store" }
+          { credentials: "include", cache: "no-store" }
         );
 
         const result = await response.json();
@@ -236,7 +236,7 @@ export default function AddMenuItemPage() {
 
       const response = await fetch(
         `${apiUrl.replace(/\/+$/, "")}/api/vendor/${session.user.id}/menu-items`,
-        {
+        { credentials: "include",
           method: "POST",
           headers: {
             "Content-Type": "application/json",

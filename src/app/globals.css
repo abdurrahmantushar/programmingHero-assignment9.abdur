@@ -1,7 +1,6 @@
-
 @import "tailwindcss";
 
-
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #fffaf3;
@@ -18,6 +17,53 @@
   --card: #ffffff;
 
   --radius: 0.75rem;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --background: #11100f;
+  --foreground: #f7f3ef;
+
+  --primary: #ff6b5f;
+  --primary-foreground: #1a0d0b;
+
+  --secondary: #2a1b17;
+  --muted: #211c19;
+  --muted-foreground: #b8aca3;
+
+  --border: #3a2e28;
+  --card: #1c1816;
+
+  --dh-surface: #1c1816;
+  --dh-surface-raised: #241f1c;
+  --dh-surface-soft: #2a231f;
+  --dh-surface-hover: #302722;
+
+  --dh-text: #f7f3ef;
+  --dh-text-muted: #b8aca3;
+  --dh-text-subtle: #8d837c;
+
+  --dh-border: #3a2e28;
+  --dh-border-soft: #2f2723;
+
+  --dh-brand: #ff6b5f;
+  --dh-brand-soft: #3a1c19;
+
+  --dh-success: #74d99b;
+  --dh-success-soft: #153126;
+
+  --dh-info: #7db8ff;
+  --dh-info-soft: #16283f;
+
+  --dh-warning: #f5c56b;
+  --dh-warning-soft: #382a13;
+
+  --dh-purple: #c9a7ff;
+  --dh-purple-soft: #2a1e3c;
+
+  --dh-pink: #f5a3c7;
+  --dh-pink-soft: #3a1e2c;
 }
 
 @theme inline {
@@ -51,6 +97,374 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   margin: 0;
+}
+
+/* Centralized dark-mode remap.
+   Light-mode utilities are untouched; these scoped overrides only apply when
+   next-themes puts the `dark` class on <html>. */
+.dark [class~="bg-white" i],
+.dark [class~="bg-[#fffaf3]" i],
+.dark [class~="bg-[#fffaf5]" i],
+.dark [class~="bg-[#fff8f3]" i],
+.dark [class~="bg-[#fff5e8]" i],
+.dark [class~="bg-[#fff7eb]" i],
+.dark [class~="bg-[#fffefd]" i],
+.dark [class~="bg-[#f8faf8]" i],
+.dark [class~="bg-[#f8f8f5]" i],
+.dark [class~="bg-[#FFF8F0]" i],
+.dark [class~="bg-gray-50" i],
+.dark [class~="bg-gray-50/80" i],
+.dark [class~="bg-gray-50/70" i],
+.dark [class~="bg-gray-100" i],
+.dark [class~="bg-gray-200" i],
+.dark [class~="bg-gray-300" i],
+.dark [class~="bg-gray-900" i],
+.dark [class~="bg-[#202020]" i],
+.dark [class~="bg-[#eee5db]" i],
+.dark [class~="focus:bg-white" i],
+.dark [class~="hover:bg-white" i]:hover,
+.dark [class~="hover:bg-gray-50" i]:hover,
+.dark [class~="hover:bg-gray-100" i]:hover,
+.dark [class~="dark:bg-gray-800" i],
+.dark [class~="dark:bg-gray-900" i],
+.dark [class~="dark:hover:bg-gray-800" i]:hover {
+  background-color: var(--dh-surface);
+}
+
+.dark [class~="bg-white/95" i] {
+  background-color: rgb(28 24 22 / 0.95);
+}
+
+.dark [class~="bg-white/80" i] {
+  background-color: rgb(28 24 22 / 0.8);
+}
+
+.dark [class~="bg-white/60" i] {
+  background-color: rgb(28 24 22 / 0.6);
+}
+
+.dark [class~="bg-white/50" i] {
+  background-color: rgb(28 24 22 / 0.5);
+}
+
+.dark [class~="bg-white/25" i] {
+  background-color: rgb(28 24 22 / 0.25);
+}
+
+.dark [class~="hover:bg-gray-800" i]:hover,
+.dark [class~="disabled:bg-gray-400" i]:disabled {
+  background-color: var(--dh-surface-hover);
+}
+
+.dark [class~="bg-orange-50" i],
+.dark [class~="bg-orange-50/50" i],
+.dark [class~="bg-orange-50/60" i],
+.dark [class~="bg-orange-50/70" i],
+.dark [class~="bg-orange-50/30" i],
+.dark [class~="bg-orange-50/40" i],
+.dark [class~="bg-orange-100" i],
+.dark [class~="bg-orange-100/60" i],
+.dark [class~="bg-[#fff1ed]" i],
+.dark [class~="bg-[#fff2e5]" i],
+.dark [class~="bg-[#fff3e5]" i],
+.dark [class~="bg-[#ffe1bd]" i],
+.dark [class~="bg-[#f6dfc8]" i],
+.dark [class~="hover:bg-orange-50" i]:hover,
+.dark [class~="hover:bg-orange-50/50" i]:hover,
+.dark [class~="hover:bg-orange-50/40" i]:hover,
+.dark [class~="hover:bg-orange-50/30" i]:hover,
+.dark [class~="hover:bg-orange-100" i]:hover,
+.dark [class~="hover:bg-[#fff1ed]" i]:hover,
+.dark [class~="hover:bg-[#fff8f3]" i]:hover,
+.dark [class~="hover:bg-[#FFF8F0]" i]:hover,
+.dark .group:hover [class~="group-hover:bg-[#FFF0EA]" i] {
+  background-color: var(--dh-warning-soft);
+}
+
+.dark [class~="bg-red-50" i],
+.dark [class~="bg-red-50/50" i],
+.dark [class~="bg-red-100" i],
+.dark [class~="bg-[#FFF3EE]" i],
+.dark [class~="hover:bg-red-50" i]:hover,
+.dark [class~="hover:bg-red-100" i]:hover,
+.dark [class~="dark:bg-red-950" i] {
+  background-color: var(--dh-brand-soft);
+}
+
+.dark [class~="bg-green-50" i],
+.dark [class~="bg-green-50/70" i],
+.dark [class~="bg-green-100" i],
+.dark [class~="bg-green-100/60" i],
+.dark [class~="bg-green-200" i],
+.dark [class~="bg-emerald-50" i],
+.dark [class~="bg-emerald-50/30" i],
+.dark [class~="bg-emerald-100" i],
+.dark [class~="hover:bg-green-50" i]:hover,
+.dark [class~="hover:bg-emerald-50" i]:hover,
+.dark [class~="hover:bg-emerald-50/30" i]:hover,
+.dark [class~="hover:bg-emerald-100" i]:hover {
+  background-color: var(--dh-success-soft);
+}
+
+.dark [class~="bg-blue-50" i],
+.dark [class~="bg-blue-50/70" i],
+.dark [class~="bg-blue-100" i],
+.dark [class~="hover:bg-blue-50" i]:hover,
+.dark [class~="from-amber-50" i] {
+  background-color: var(--dh-info-soft);
+}
+
+.dark [class~="bg-purple-50" i],
+.dark [class~="hover:bg-purple-50" i]:hover {
+  background-color: var(--dh-purple-soft);
+}
+
+.dark [class~="bg-amber-50" i],
+.dark [class~="bg-amber-100" i],
+.dark [class~="hover:bg-amber-100" i]:hover {
+  background-color: var(--dh-warning-soft);
+}
+
+.dark [class~="bg-pink-50" i] {
+  background-color: var(--dh-pink-soft);
+}
+
+.dark [class~="bg-red-500" i],
+.dark [class~="bg-red-600" i],
+.dark [class~="bg-red-600/90" i],
+.dark [class~="bg-[#e6392e]" i],
+.dark [class~="bg-[#e62e20]" i],
+.dark [class~="bg-[#e52b19]" i],
+.dark [class~="hover:bg-[#E6392E]" i]:hover,
+.dark [class~="hover:bg-[#e52b19]" i]:hover,
+.dark [class~="hover:bg-red-600" i]:hover {
+  background-color: var(--dh-brand);
+}
+
+.dark [class~="after:bg-[#e62e20]" i]::after {
+  background-color: var(--dh-brand);
+}
+
+.dark [class~="bg-green-500" i],
+.dark [class~="bg-green-600" i],
+.dark [class~="bg-emerald-600" i] {
+  background-color: var(--dh-success);
+}
+
+.dark [class~="bg-orange-500" i],
+.dark [class~="bg-orange-600" i] {
+  background-color: var(--dh-warning);
+}
+
+.dark [class~="text-gray-300" i],
+.dark [class~="text-[#777]" i],
+.dark [class~="placeholder:text-gray-400" i]::placeholder,
+.dark [class~="placeholder:text-[#99918A]" i]::placeholder,
+.dark [class~="placeholder:text-[#AAA39C]" i]::placeholder,
+.dark [class~="placeholder:text-[#a49a92]" i]::placeholder {
+  color: var(--dh-text-subtle);
+}
+
+.dark [class~="text-gray-400" i],
+.dark [class~="text-gray-500" i],
+.dark [class~="text-[#77716b]" i],
+.dark [class~="text-[#81766e]" i],
+.dark [class~="text-[#99918A]" i],
+.dark [class~="text-[#AAA39C]" i],
+.dark [class~="text-[#a49a92]" i],
+.dark [class~="text-[#625b54]" i],
+.dark [class~="text-[#514b45]" i],
+.dark [class~="text-[#716963]" i],
+.dark [class~="dark:text-gray-300" i],
+.dark [class~="dark:text-gray-400" i] {
+  color: var(--dh-text-muted);
+}
+
+.dark [class~="text-gray-600" i],
+.dark [class~="text-gray-700" i],
+.dark [class~="text-gray-800" i],
+.dark [class~="text-gray-900" i],
+.dark [class~="text-[#292929]" i],
+.dark [class~="text-[#25211e]" i],
+.dark [class~="text-[#24211f]" i],
+.dark [class~="text-[#292521]" i],
+.dark [class~="text-[#292524]" i],
+.dark [class~="text-[#222]" i],
+.dark [class~="dark:text-gray-900" i],
+.dark [class~="dark:text-white" i],
+.dark [class~="dark:text-gray-200" i],
+.dark [class~="hover:text-gray-700" i]:hover,
+.dark [class~="hover:text-gray-900" i]:hover {
+  color: var(--dh-text);
+}
+
+.dark [class~="text-[#e62e20]" i],
+.dark [class~="text-[#E6392E]" i],
+.dark [class~="text-[#e6392e]" i],
+.dark [class~="text-[#e52b19]" i],
+.dark [class~="text-red-500" i],
+.dark [class~="text-red-600" i],
+.dark [class~="text-red-700" i],
+.dark [class~="text-red-800" i],
+.dark [class~="hover:text-[#e62e20]" i]:hover,
+.dark [class~="hover:text-[#E6392E]" i]:hover,
+.dark [class~="hover:text-[#e52b19]" i]:hover,
+.dark [class~="hover:text-red-600" i]:hover,
+.dark [class~="hover:text-red-700" i]:hover,
+.dark .group:hover [class~="group-hover:text-[#e62e20]" i],
+.dark .group:hover [class~="group-hover:text-[#e6392e]" i],
+.dark [class~="dark:focus:ring-red-900" i]:focus {
+  color: var(--dh-brand);
+}
+
+.dark [class~="text-green-600" i],
+.dark [class~="text-green-700" i],
+.dark [class~="text-green-800" i],
+.dark [class~="text-emerald-600" i],
+.dark [class~="text-emerald-700" i],
+.dark [class~="hover:text-emerald-700" i]:hover {
+  color: var(--dh-success);
+}
+
+.dark [class~="text-blue-600" i],
+.dark [class~="text-blue-700" i],
+.dark [class~="hover:text-blue-600" i]:hover {
+  color: var(--dh-info);
+}
+
+.dark [class~="text-orange-600" i],
+.dark [class~="text-orange-700" i],
+.dark [class~="text-orange-800" i],
+.dark [class~="text-amber-500" i],
+.dark [class~="text-amber-600" i],
+.dark [class~="text-amber-700" i] {
+  color: var(--dh-warning);
+}
+
+.dark [class~="text-purple-600" i],
+.dark [class~="text-purple-700" i] {
+  color: var(--dh-purple);
+}
+
+.dark [class~="text-pink-600" i] {
+  color: var(--dh-pink);
+}
+
+.dark [class~="border-gray-100" i],
+.dark [class~="border-gray-200" i],
+.dark [class~="border-gray-300" i],
+.dark [class~="border-[#eee5db]" i],
+.dark [class~="border-[#f1e5d9]" i],
+.dark [class~="border-[#e8d8ca]" i],
+.dark [class~="border-[#e9d9ca]" i],
+.dark [class~="border-[#e9d7c7]" i],
+.dark [class~="border-[#e5d9ca]" i],
+.dark [class~="border-[#f3e5d7]" i],
+.dark [class~="border-[#f0e9e2]" i],
+.dark [class~="border-[#f0ebe5]" i],
+.dark [class~="divide-gray-50" i],
+.dark [class~="divide-gray-100" i],
+.dark [class~="dark:border-gray-700" i],
+.dark [class~="dark:border-gray-800" i] {
+  border-color: var(--dh-border);
+}
+
+.dark [class~="divide-gray-50" i],
+.dark [class~="divide-gray-100" i] {
+  border-color: var(--dh-border-soft);
+}
+
+.dark [class~="border-orange-100" i],
+.dark [class~="border-orange-200" i],
+.dark [class~="border-orange-300" i],
+.dark [class~="border-orange-50" i],
+.dark [class~="divide-orange-50" i],
+.dark [class~="hover:border-orange-200" i]:hover,
+.dark [class~="hover:border-orange-300" i]:hover {
+  border-color: var(--dh-warning-soft);
+}
+
+.dark [class~="border-green-100" i],
+.dark [class~="border-green-200" i],
+.dark [class~="border-emerald-50" i] {
+  border-color: var(--dh-success-soft);
+}
+
+.dark [class~="border-blue-100" i] {
+  border-color: var(--dh-info-soft);
+}
+
+.dark [class~="border-purple-100" i],
+.dark [class~="border-purple-200" i],
+.dark [class~="border-purple-300" i] {
+  border-color: var(--dh-purple-soft);
+}
+
+.dark [class~="border-amber-100" i],
+.dark [class~="border-amber-200" i] {
+  border-color: var(--dh-warning-soft);
+}
+
+.dark [class~="border-[#f2b8a8]" i],
+.dark [class~="border-[#F2B8A8]" i],
+.dark [class~="border-[#e62e20]" i],
+.dark [class~="border-[#E6392E]" i],
+.dark [class~="border-[#e52b19]" i],
+.dark [class~="focus:border-[#e62e20]" i]:focus,
+.dark [class~="focus-within:border-[#E6392E]" i]:focus-within,
+.dark [class~="hover:border-[#e62e20]" i]:hover,
+.dark [class~="hover:border-[#E6392E]" i]:hover,
+.dark [class~="hover:border-[#e52b19]" i]:hover,
+.dark .group:hover [class~="group-hover:border-[#E6392E]" i] {
+  border-color: var(--dh-brand);
+}
+
+.dark [class~="focus:ring-orange-100" i]:focus,
+.dark [class~="ring-orange-100" i] {
+  --tw-ring-color: var(--dh-warning-soft);
+}
+
+.dark [class~="focus:ring-red-100" i]:focus,
+.dark [class~="ring-red-100" i] {
+  --tw-ring-color: var(--dh-brand-soft);
+}
+
+.dark [class~="focus:ring-green-100" i]:focus,
+.dark [class~="focus:ring-emerald-100" i]:focus,
+.dark [class~="dark:focus:ring-red-900" i]:focus {
+  --tw-ring-color: var(--dh-success-soft);
+}
+
+.dark [class~="focus-within:ring-[#E6392E]/20" i]:focus-within,
+.dark [class~="ring-purple-100" i] {
+  --tw-ring-color: var(--dh-brand-soft);
+}
+
+.dark [class~="shadow-red-100" i],
+.dark [class~="shadow-red-200" i],
+.dark [class~="shadow-gray-200/60" i] {
+  --tw-shadow-color: rgb(255 107 95 / 0.18);
+}
+
+.dark [class~="shadow-purple-200" i] {
+  --tw-shadow-color: rgb(201 167 255 / 0.2);
+}
+
+.dark [class~="shadow-black/10" i] {
+  --tw-shadow-color: rgb(0 0 0 / 0.4);
+}
+
+.dark [class~="to-orange-50" i] {
+  --tw-gradient-to: var(--dh-warning-soft);
+}
+
+.dark [class~="fill-[#e62e20]" i] {
+  fill: var(--dh-brand);
+}
+
+.dark [class~="accent-[#E6392E]" i],
+.dark [class~="accent-red-600" i] {
+  accent-color: var(--dh-brand);
 }
 
 /* Mobile only: prevent any accidental sideways scrolling.

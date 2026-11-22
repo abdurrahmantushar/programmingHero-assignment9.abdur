@@ -2,6 +2,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -24,6 +25,7 @@ import {
   Receipt,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import ThemeToggle from "@/app/components/shared/ThemeToggle";
 
 const dashboardMenus = {
   customer: {
@@ -74,6 +76,7 @@ function DashboardLayoutContent({
 }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [failedImage, setFailedImage] = useState<string | null>(null);
 
   const { data: session, isPending } = authClient.useSession();
 
@@ -149,10 +152,14 @@ function DashboardLayoutContent({
 
         <div className="border-b border-orange-100 px-6 py-6">
           <div className="flex items-center gap-3">
-            {userImage ? (
-              <img
+            {userImage && failedImage !== userImage ? (
+              <Image
                 src={userImage}
                 alt={userName}
+                width={48}
+                height={48}
+                unoptimized
+                onError={() => setFailedImage(userImage)}
                 className="h-12 w-12 rounded-full object-cover"
               />
             ) : (
@@ -228,6 +235,9 @@ function DashboardLayoutContent({
             </div>
           </div>
 
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+          </div>
         </header>
 
         <main className="p-5 sm:p-8">{children}</main>

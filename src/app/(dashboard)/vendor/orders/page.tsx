@@ -57,7 +57,7 @@ export default function VendorOrdersPage() {
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/orders`,
-        { cache: "no-store" }
+        { credentials: "include", cache: "no-store" }
       );
 
       const result = await response.json();
@@ -96,7 +96,7 @@ export default function VendorOrdersPage() {
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/orders/${orderId}`,
-        {
+        { credentials: "include",
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",

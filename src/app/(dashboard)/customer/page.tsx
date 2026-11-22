@@ -67,7 +67,7 @@ export default function CustomerDashboardPage() {
 
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/customer/${session.user.id}/dashboard`
-        );
+        , { credentials: "include" });
 
         const result = await response.json();
 

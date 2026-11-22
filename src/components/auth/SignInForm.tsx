@@ -10,9 +10,9 @@ import { useRouter } from "next/navigation";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const { data: session, isPending } = authClient.useSession();
-    const [loading, setLoading] = useState(false);
-    const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const router = useRouter();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -42,7 +42,6 @@ export default function SignInForm() {
       const { error } = await authClient.signIn.email({
         email,
         password: formData.password,
-        
       });
 
       if (error) {
@@ -61,6 +60,24 @@ export default function SignInForm() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    try {
+      setGoogleLoading(true);
+
+      const { error } = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/",
+      });
+
+      if (error) {
+        toast.error(error.message || "Google login failed.");
+        setGoogleLoading(false);
+      }
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+      setGoogleLoading(false);
+    }
+  };
 
   return (
     <div
@@ -69,7 +86,7 @@ export default function SignInForm() {
         backgroundImage: "url('/images/categories/vegPizza.png')",
       }}
     >
-      <div className="relative z-10 rounded-2xl  p-6  sm:p-7">
+      <div className="relative z-10 rounded-2xl p-6 sm:p-7">
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2">
             <span className="text-3xl">🍕</span>
@@ -89,7 +106,7 @@ export default function SignInForm() {
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
-            <label className="mb-2 block text-sm font-semibold text-[#ffffff]">
+            <label className="mb-2 block text-sm font-semibold text-white">
               Email Address
             </label>
 
@@ -109,7 +126,7 @@ export default function SignInForm() {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-semibold text-[#fffefd]">
+            <label className="mb-2 block text-sm font-semibold text-white">
               Password
             </label>
 
@@ -138,7 +155,7 @@ export default function SignInForm() {
           </div>
 
           <div className="flex items-center justify-between text-sm">
-            <label className="flex items-center gap-2 text-[#ffffff]">
+            <label className="flex items-center gap-2 text-white">
               <input
                 type="checkbox"
                 className="h-4 w-4 accent-[#E6392E]"
@@ -156,9 +173,10 @@ export default function SignInForm() {
 
           <button
             type="submit"
-            className="w-full rounded-xl bg-[#E6392E] py-3.5 text-sm font-bold text-white transition hover:bg-[#C9251A]"
+            disabled={loading}
+            className="w-full rounded-xl bg-[#E6392E] py-3.5 text-sm font-bold text-white transition hover:bg-[#C9251A] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Sign In
+            {loading ? "Signing In..." : "Sign In"}
           </button>
         </form>
 
@@ -172,10 +190,12 @@ export default function SignInForm() {
 
         <button
           type="button"
-          className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#EEE5DB] bg-white py-3 text-sm font-semibold text-[#25211E] transition hover:bg-[#FFF8F0]"
+          onClick={handleGoogleSignIn}
+          disabled={googleLoading}
+          className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#EEE5DB] bg-white py-3 text-sm font-semibold text-[#25211E] transition hover:bg-[#FFF8F0] disabled:cursor-not-allowed disabled:opacity-60"
         >
           <span className="text-lg font-bold text-[#4285F4]">G</span>
-          Continue with Google
+          {googleLoading ? "Connecting to Google..." : "Continue with Google"}
         </button>
 
         <p className="mt-7 text-center text-sm text-[#77716B]">

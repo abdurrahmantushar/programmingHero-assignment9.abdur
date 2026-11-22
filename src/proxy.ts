@@ -33,7 +33,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  let session: { user: { role?: string | null } } | null = null;
+  let session: {
+    user: { role?: string | null; isBlocked?: boolean | null };
+  } | null = null;
 
   try {
     session = await auth.api.getSession({
@@ -44,7 +46,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
-  if (!session?.user) {
+  if (!session?.user || session.user.isBlocked === true) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 

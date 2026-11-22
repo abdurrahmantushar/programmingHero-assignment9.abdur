@@ -20,7 +20,11 @@ import {
   Loader2,
   RefreshCw,
   Filter,
+  Ban,
+  CheckCircle2,
 } from "lucide-react";
+import toast from "react-hot-toast";
+import { authClient } from "@/lib/auth-client";
 
 type UserRole = "admin" | "vendor" | "customer";
 
@@ -32,6 +36,7 @@ interface User {
   subscriptionPlan?: string;
   createdAt?: string;
   image?: string;
+  isBlocked?: boolean;
 }
 
 interface Pagination {
@@ -62,6 +67,9 @@ export default function AdminUsersPage() {
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [newRole, setNewRole] = useState<UserRole>("customer");
   const [deleteUser, setDeleteUser] = useState<User | null>(null);
+  const [blockTarget, setBlockTarget] = useState<User | null>(null);
+  const { data: session } = authClient.useSession();
+  const currentUserId = session?.user?.id;
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -78,7 +86,7 @@ export default function AdminUsersPage() {
 
       const response = await fetch(
         `${API_URL}/api/admin/users?${params.toString()}`,
-        { cache: "no-store" }
+        { credentials: "include", cache: "no-store" }
       );
 
       const result = await response.json();
@@ -121,7 +129,7 @@ export default function AdminUsersPage() {
 
       const response = await fetch(
         `${API_URL}/api/admin/users/${selectedUser._id}/role`,
-        {
+        { credentials: "include",
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -140,7 +148,7 @@ export default function AdminUsersPage() {
       setSelectedUser(null);
       await fetchUsers();
     } catch (err) {
-      alert(
+      toast.error(
         err instanceof Error ? err.message : "Failed to update role"
       );
     } finally {
@@ -156,7 +164,7 @@ export default function AdminUsersPage() {
 
       const response = await fetch(
         `${API_URL}/api/admin/users/${deleteUser._id}`,
-        { method: "DELETE" }
+        { credentials: "include", method: "DELETE" }
       );
 
       const result = await response.json();
@@ -173,8 +181,49 @@ export default function AdminUsersPage() {
         await fetchUsers();
       }
     } catch (err) {
-      alert(
+      toast.error(
         err instanceof Error ? err.message : "Failed to delete user"
+      );
+    } finally {
+      setActionLoading("");
+    }
+  };
+
+  const handleBlockToggle = async () => {
+    if (!blockTarget) return;
+
+    const nextBlocked = !blockTarget.isBlocked;
+
+    try {
+      setActionLoading(blockTarget._id);
+
+      const response = await fetch(
+        `${API_URL}/api/admin/users/${blockTarget._id}/block`,
+        {
+          credentials: "include",
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ isBlocked: nextBlocked }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "Failed to update block status");
+      }
+
+      toast.success(
+        result.message ||
+          `User ${nextBlocked ? "blocked" : "unblocked"} successfully`
+      );
+      setBlockTarget(null);
+      await fetchUsers();
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to update block status"
       );
     } finally {
       setActionLoading("");
@@ -340,11 +389,12 @@ export default function AdminUsersPage() {
         )}
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[850px] text-left">
+          <table className="w-full min-w-[950px] text-left">
             <thead>
               <tr className="bg-gray-50/80 text-xs uppercase tracking-wider text-gray-500">
                 <th className="px-5 py-4 font-semibold">User</th>
                 <th className="px-5 py-4 font-semibold">Role</th>
+                <th className="px-5 py-4 font-semibold">Status</th>
                 <th className="px-5 py-4 font-semibold">Subscription</th>
                 <th className="px-5 py-4 font-semibold">Joined Date</th>
                 <th className="px-5 py-4 text-right font-semibold">
@@ -356,7 +406,7 @@ export default function AdminUsersPage() {
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="py-16 text-center">
+                  <td colSpan={6} className="py-16 text-center">
                     <Loader2
                       size={28}
                       className="mx-auto animate-spin text-emerald-600"
@@ -368,7 +418,7 @@ export default function AdminUsersPage() {
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-5 py-16 text-center">
+                  <td colSpan={6} className="px-5 py-16 text-center">
                     <Users
                       size={35}
                       className="mx-auto text-gray-300"
@@ -425,6 +475,23 @@ export default function AdminUsersPage() {
                     </td>
 
                     <td className="px-5 py-4">
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${
+                          user.isBlocked
+                            ? "border-red-100 bg-red-50 text-red-700"
+                            : "border-emerald-100 bg-emerald-50 text-emerald-700"
+                        }`}
+                      >
+                        {user.isBlocked ? (
+                          <Ban size={13} />
+                        ) : (
+                          <CheckCircle2 size={13} />
+                        )}
+                        {user.isBlocked ? "Blocked" : "Active"}
+                      </span>
+                    </td>
+
+                    <td className="px-5 py-4">
                       {user.role === "vendor" &&
                       user.subscriptionPlan === "premium" ? (
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
@@ -448,7 +515,7 @@ export default function AdminUsersPage() {
                     </td>
 
                     <td className="px-5 py-4">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex flex-wrap items-center justify-end gap-2">
                         {user.role !== "admin" && (
                           <>
                             <button
@@ -468,11 +535,35 @@ export default function AdminUsersPage() {
                             </button>
                           </>
                         )}
-                        {user.role === "admin" && (
-                          <span className="text-xs font-medium text-gray-400">
-                            Protected
-                          </span>
+
+                        {(user.role !== "admin" ||
+                          (currentUserId &&
+                            String(user._id) !== String(currentUserId))) && (
+                          <button
+                            onClick={() => setBlockTarget(user)}
+                            disabled={actionLoading === user._id}
+                            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition disabled:opacity-50 ${
+                              user.isBlocked
+                                ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                                : "border-red-100 text-red-600 hover:bg-red-50"
+                            }`}
+                          >
+                            {user.isBlocked ? (
+                              <CheckCircle2 size={13} />
+                            ) : (
+                              <Ban size={13} />
+                            )}
+                            {user.isBlocked ? "Unblock" : "Block"}
+                          </button>
                         )}
+
+                        {user.role === "admin" &&
+                          (!currentUserId ||
+                            String(user._id) === String(currentUserId)) && (
+                            <span className="text-xs font-medium text-gray-400">
+                              Protected
+                            </span>
+                          )}
                       </div>
                     </td>
                   </tr>
@@ -621,6 +712,66 @@ export default function AdminUsersPage() {
                 {actionLoading === deleteUser._id
                   ? "Deleting..."
                   : "Delete User"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {blockTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div
+              className={`flex h-12 w-12 items-center justify-center rounded-full ${
+                blockTarget.isBlocked
+                  ? "bg-emerald-50 text-emerald-600"
+                  : "bg-red-50 text-red-600"
+              }`}
+            >
+              {blockTarget.isBlocked ? (
+                <CheckCircle2 size={22} />
+              ) : (
+                <Ban size={22} />
+              )}
+            </div>
+
+            <h3 className="mt-4 text-lg font-bold text-gray-900">
+              {blockTarget.isBlocked ? "Unblock User?" : "Block User?"}
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-gray-500">
+              Are you sure you want to{" "}
+              <span className="font-semibold text-gray-800">
+                {blockTarget.isBlocked ? "unblock" : "block"}
+              </span>{" "}
+              <span className="font-semibold text-gray-800">
+                {blockTarget.name || blockTarget.email}
+              </span>
+              ?
+              {!blockTarget.isBlocked &&
+                " Blocked users cannot access protected areas of PizzaHub."}
+            </p>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setBlockTarget(null)}
+                className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBlockToggle}
+                disabled={actionLoading === blockTarget._id}
+                className={`flex-1 rounded-xl px-4 py-3 text-sm font-semibold text-white transition disabled:opacity-50 ${
+                  blockTarget.isBlocked
+                    ? "bg-emerald-600 hover:bg-emerald-700"
+                    : "bg-red-600 hover:bg-red-700"
+                }`}
+              >
+                {actionLoading === blockTarget._id
+                  ? "Updating..."
+                  : blockTarget.isBlocked
+                    ? "Unblock User"
+                    : "Block User"}
               </button>
             </div>
           </div>

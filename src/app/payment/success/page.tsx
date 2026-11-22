@@ -44,47 +44,48 @@ function PaymentSuccessContent() {
 
     let cancelled = false;
 
-    const verifyPayment = async () => {
-      try {
-        setStatus("loading");
-        setMessage("Verifying your payment with Stripe...");
+const verifyPayment = async () => {
+  try {
+    setStatus("loading");
+    setMessage("Verifying your payment with Stripe...");
 
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/subscription/verify`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ sessionId }),
-          }
-        );
-
-        const result = await response.json();
-
-        if (!response.ok || !result.success) {
-          throw new Error(
-            result.message || "Payment verification failed."
-          );
-        }
-
-        if (!cancelled) {
-          setStatus("success");
-          setMessage("Your Premium subscription has been activated successfully.");
-        }
-      } catch (error) {
-        console.error("Payment Verification Error:", error);
-
-        if (!cancelled) {
-          setStatus("error");
-          setMessage(
-            error instanceof Error
-              ? error.message
-              : "Unable to verify your payment."
-          );
-        }
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/subscription/verify`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ sessionId }),
       }
-    };
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(
+        result.message || "Payment verification failed."
+      );
+    }
+
+    if (!cancelled) {
+      setStatus("success");
+      setMessage("Your Premium subscription has been activated successfully.");
+    }
+  } catch (error) {
+    console.error("Payment Verification Error:", error);
+
+    if (!cancelled) {
+      setStatus("error");
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to verify your payment."
+      );
+    }
+  }
+};
 
     verifyPayment();
 

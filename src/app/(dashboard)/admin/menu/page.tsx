@@ -20,6 +20,7 @@ import {
   X,
   ImageIcon,
 } from "lucide-react";
+import MenuItemImage from "@/app/components/shared/MenuItemImage";
 
 type MenuStatus = "pending" | "approved" | "rejected";
 type StatusFilter = "all" | MenuStatus;
@@ -81,7 +82,7 @@ export default function AdminMenuPage() {
 
       const response = await fetch(
         `${API_URL}/api/admin/menu-items?${params.toString()}`,
-        { cache: "no-store" }
+        { credentials: "include", cache: "no-store" }
       );
 
       const result = await response.json();
@@ -122,7 +123,7 @@ export default function AdminMenuPage() {
 
       const response = await fetch(
         `${API_URL}/api/admin/menu-items/${item._id}/status`,
-        {
+        { credentials: "include",
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -155,7 +156,7 @@ export default function AdminMenuPage() {
 
       const response = await fetch(
         `${API_URL}/api/admin/menu-items/${deleteItem._id}`,
-        { method: "DELETE" }
+        { credentials: "include", method: "DELETE" }
       );
 
       const result = await response.json();
@@ -401,11 +402,14 @@ export default function AdminMenuPage() {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         {getItemImage(item) ? (
-                          <img
-                            src={getItemImage(item)}
-                            alt={getItemName(item)}
-                            className="h-12 w-12 rounded-xl object-cover"
-                          />
+                          <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl">
+                            <MenuItemImage
+                              images={[getItemImage(item)]}
+                              alt={getItemName(item)}
+                              sizes="48px"
+                              className="object-cover"
+                            />
+                          </div>
                         ) : (
                           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 text-gray-400">
                             <ImageIcon size={20} />

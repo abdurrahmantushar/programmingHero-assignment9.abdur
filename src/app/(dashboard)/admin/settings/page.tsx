@@ -98,7 +98,7 @@ export default function AdminSettingsPage() {
 
                 const response = await fetch(
                     `${process.env.NEXT_PUBLIC_API_URL}/api/admin/settings`,
-                    { cache: "no-store" }
+                    { credentials: "include", cache: "no-store" }
                 );
 
                 const result = await response.json();
@@ -145,7 +145,7 @@ export default function AdminSettingsPage() {
 
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/api/admin/settings`,
-                {
+                { credentials: "include",
                     method: "PATCH",
                     headers: {
                         "Content-Type": "application/json",

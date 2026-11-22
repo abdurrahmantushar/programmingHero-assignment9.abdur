@@ -4,6 +4,7 @@ import "./globals.css";
 import ConditionalLayout from "./components/shared/ConditionalLayout";
 import { Toaster } from "react-hot-toast";
 import { Suspense } from "react";
+import { ThemeProvider } from "next-themes";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,14 +30,23 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <Suspense fallback={null}>
-          <ConditionalLayout>{children}</ConditionalLayout>
-        </Suspense>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+          storageKey="pizzahub-theme"
+          disableTransitionOnChange
+        >
+          <Suspense fallback={null}>
+            <ConditionalLayout>{children}</ConditionalLayout>
+          </Suspense>
 
-        <Toaster position="top-right" />
+          <Toaster position="top-right" />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -48,7 +48,9 @@ export default function VendorSubscriptionPage() {
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/subscription`,
-        { cache: "no-store" }
+        { cache: "no-store",
+          credentials: 'include',
+         }
       );
 
       const result = await response.json();
@@ -80,48 +82,49 @@ export default function VendorSubscriptionPage() {
     }
   }, [isPending, session?.user?.id, fetchSubscription]);
 
-  const handleUpgrade = async () => {
-    if (!session?.user?.id) {
-      toast.error("Please sign in with your vendor account.");
-      return;
+const handleUpgrade = async () => {
+  if (!session?.user?.id) {
+    toast.error("Please sign in with your vendor account.");
+    return;
+  }
+
+  try {
+    setCheckoutLoading(true);
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/subscription/checkout`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(
+        result.message || "Unable to create checkout session."
+      );
     }
 
-    try {
-      setCheckoutLoading(true);
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/subscription/checkout`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(
-          result.message || "Unable to create checkout session."
-        );
-      }
-
-      if (!result.data?.checkoutUrl) {
-        throw new Error("Stripe checkout URL was not received.");
-      }
-
-      window.location.href = result.data.checkoutUrl;
-    } catch (error) {
-      console.error("Subscription Checkout Error:", error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Something went wrong."
-      );
-      setCheckoutLoading(false);
+    if (!result.data?.checkoutUrl) {
+      throw new Error("Stripe checkout URL was not received.");
     }
-  };
+
+    window.location.href = result.data.checkoutUrl;
+  } catch (error) {
+    console.error("Subscription Checkout Error:", error);
+    toast.error(
+      error instanceof Error
+        ? error.message
+        : "Something went wrong."
+    );
+    setCheckoutLoading(false);
+  }
+};
 
   if (isPending || loading) {
     return (

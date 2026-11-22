@@ -3,7 +3,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -23,6 +22,7 @@ import {
   Star,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import MenuItemImage from "@/app/components/shared/MenuItemImage";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -128,7 +128,7 @@ export default function OrderPage({
 
         const response = await fetch(
           `${API_URL}/api/customer/${session.user.id}/addresses`
-        );
+        , { credentials: "include" });
 
         const result = await response.json();
 
@@ -203,7 +203,7 @@ export default function OrderPage({
 
       const deliveryAddress = `${selectedAddress.fullName}, ${selectedAddress.phone}, ${selectedAddress.address}, ${selectedAddress.area}, ${selectedAddress.city} - ${selectedAddress.postalCode}`;
 
-      const response = await fetch(`${API_URL}/api/orders`, {
+      const response = await fetch(`${API_URL}/api/orders`, { credentials: "include",
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -325,10 +325,9 @@ export default function OrderPage({
             <div className="overflow-hidden rounded-3xl border border-[#eee5db] bg-white shadow-sm">
               <div className="relative aspect-[5/4] bg-gray-100">
                 {pizza.images?.[0] && (
-                  <Image
-                    src={pizza.images[0]}
+                  <MenuItemImage
+                    images={pizza.images}
                     alt={pizza.itemName}
-                    fill
                     priority
                     sizes="(max-width: 1024px) 100vw, 40vw"
                     className="object-cover"

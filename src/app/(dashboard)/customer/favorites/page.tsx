@@ -2,7 +2,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   Heart,
@@ -13,6 +12,7 @@ import {
   Utensils,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import MenuItemImage from "@/app/components/shared/MenuItemImage";
 import { toast } from "sonner";
 
 interface Favorite {
@@ -50,7 +50,7 @@ export default function FavoritesPage() {
 
         const response = await fetch(
           `${API_URL}/api/customer/${session.user.id}/favorites`,
-          { cache: "no-store" }
+          { credentials: "include", cache: "no-store" }
         );
 
         const result = await response.json();
@@ -82,7 +82,7 @@ export default function FavoritesPage() {
 
       const response = await fetch(
         `${API_URL}/api/favorites/${favoriteId}`,
-        {
+        { credentials: "include",
           method: "DELETE",
         }
       );
@@ -199,10 +199,9 @@ export default function FavoritesPage() {
                 >
                   <div className="relative aspect-[16/10] overflow-hidden bg-gray-100">
                     {favorite.images?.[0] ? (
-                      <Image
-                        src={favorite.images[0]}
+                      <MenuItemImage
+                        images={favorite.images}
                         alt={favorite.itemName}
-                        fill
                         sizes="(max-width: 768px) 100vw, 50vw"
                         className="object-cover transition duration-500 group-hover:scale-105"
                       />

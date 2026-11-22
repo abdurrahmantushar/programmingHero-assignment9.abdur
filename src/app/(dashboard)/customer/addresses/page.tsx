@@ -70,7 +70,7 @@ export default function CustomerAddressesPage() {
 
       const response = await fetch(
         `${API_URL}/api/customer/${customerId}/addresses`
-      );
+      , { credentials: "include" });
 
       const result = await response.json();
 
@@ -135,7 +135,7 @@ export default function CustomerAddressesPage() {
         ? `${API_URL}/api/customer/${customerId}/addresses/${editingAddress._id}`
         : `${API_URL}/api/customer/${customerId}/addresses`;
 
-      const response = await fetch(url, {
+      const response = await fetch(url, { credentials: "include",
         method: editingAddress ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
@@ -186,7 +186,7 @@ export default function CustomerAddressesPage() {
 
       const response = await fetch(
         `${API_URL}/api/customer/${customerId}/addresses/${addressId}`,
-        { method: "DELETE" }
+        { credentials: "include", method: "DELETE" }
       );
 
       const result = await response.json();

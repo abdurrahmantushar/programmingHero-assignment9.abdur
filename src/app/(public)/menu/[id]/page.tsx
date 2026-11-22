@@ -52,6 +52,7 @@ export default function PizzaDetailsPage({
   const [pizza, setPizza] = useState<MenuItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteId, setFavoriteId] = useState("");
@@ -80,6 +81,7 @@ export default function PizzaDetailsPage({
         }
 
         setPizza(result.data);
+        setActiveImageIndex(0);
       } catch (error) {
         setError(
           error instanceof Error ? error.message : "Something went wrong"
@@ -101,7 +103,7 @@ export default function PizzaDetailsPage({
       try {
         const response = await fetch(
           `${API_URL}/api/customer/${session.user.id}/favorites`,
-          { cache: "no-store" }
+          { credentials: "include", cache: "no-store" }
         );
 
         const result = await response.json();
@@ -138,7 +140,7 @@ export default function PizzaDetailsPage({
       if (isFavorite && favoriteId) {
         const response = await fetch(
           `${API_URL}/api/favorites/${favoriteId}`,
-          {
+          { credentials: "include",
             method: "DELETE",
           }
         );
@@ -152,7 +154,7 @@ export default function PizzaDetailsPage({
         setIsFavorite(false);
         setFavoriteId("");
       } else {
-        const response = await fetch(`${API_URL}/api/favorites`, {
+        const response = await fetch(`${API_URL}/api/favorites`, { credentials: "include",
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -183,6 +185,11 @@ export default function PizzaDetailsPage({
       setFavoriteLoading(false);
     }
   };
+
+  const images = pizza?.images || [];
+  const galleryImages = images.length
+    ? [...images.slice(activeImageIndex), ...images.slice(0, activeImageIndex)]
+    : images;
 
   if (isPending || loading) {
     return (
@@ -225,7 +232,8 @@ export default function PizzaDetailsPage({
             <div className="relative aspect-square overflow-hidden rounded-xl bg-gray-100">
               {pizza.images?.[0] ? (
                 <MenuItemImage
-                  images={pizza.images}
+                  key={activeImageIndex}
+                  images={galleryImages}
                   alt={pizza.itemName}
                   priority
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -267,6 +275,31 @@ export default function PizzaDetailsPage({
                 </button>
               )}
             </div>
+
+            {pizza.images?.length > 1 && (
+              <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
+                {pizza.images.map((image, index) => (
+                  <button
+                    key={`${image}-${index}`}
+                    type="button"
+                    onClick={() => setActiveImageIndex(index)}
+                    aria-label={`Show image ${index + 1}`}
+                    className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border-2 bg-gray-100 transition ${
+                      activeImageIndex === index
+                        ? "border-[#e62e20]"
+                        : "border-transparent hover:border-[#e62e20]"
+                    }`}
+                  >
+                    <MenuItemImage
+                      images={[image]}
+                      alt={`${pizza.itemName} ${index + 1}`}
+                      sizes="80px"
+                      className="object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="mt-5 grid grid-cols-2 gap-3">
               <div className="rounded-xl bg-[#fffaf3] p-4">
@@ -378,19 +411,26 @@ export default function PizzaDetailsPage({
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() =>
-                router.push(
-                  session?.user ? `/order/${pizza._id}` : "/sign-in"
-                )
-              }
-              disabled={!pizza.isAvailable}
-              className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-[#e62e20] px-6 py-4 font-semibold text-white transition hover:bg-[#c92318] disabled:cursor-not-allowed disabled:bg-gray-400"
-            >
-              <ShoppingBag size={20} />
-              {pizza.isAvailable ? "Order Now" : "Currently Unavailable"}
-            </button>
+            {session?.user?.role === "vendor" ||
+            session?.user?.role === "admin" ? (
+              <p className="mt-8 rounded-xl bg-[#fff1ed] px-6 py-4 text-center text-sm font-semibold text-[#e62e20]">
+                {session.user.role} can&apos;t order. Only customer can.
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={() =>
+                  router.push(
+                    session?.user ? `/order/${pizza._id}` : "/sign-in"
+                  )
+                }
+                disabled={!pizza.isAvailable}
+                className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-[#e62e20] px-6 py-4 font-semibold text-white transition hover:bg-[#c92318] disabled:cursor-not-allowed disabled:bg-gray-400"
+              >
+                <ShoppingBag size={20} />
+                {pizza.isAvailable ? "Order Now" : "Currently Unavailable"}
+              </button>
+            )}
 
             <p className="mt-3 text-center text-xs text-gray-400">
               Freshly prepared and delivered to your doorstep.

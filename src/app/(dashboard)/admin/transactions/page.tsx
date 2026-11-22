@@ -117,7 +117,7 @@ export default function AdminTransactionsPage() {
 
             const response = await fetch(
                 `${API_URL}/api/admin/transactions?${params}`,
-                { cache: "no-store" }
+                { credentials: "include", cache: "no-store" }
             );
 
             const result = await response.json();

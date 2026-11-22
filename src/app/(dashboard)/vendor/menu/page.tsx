@@ -16,6 +16,7 @@ import {
   Filter,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import MenuItemImage from "@/app/components/shared/MenuItemImage";
 import { toast } from "sonner";
 
 type MenuItem = {
@@ -50,7 +51,7 @@ export default function VendorMenuPage() {
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/menu-items`,
-        { cache: "no-store" }
+        { credentials: "include", cache: "no-store" }
       );
 
       const result = await response.json();
@@ -92,7 +93,7 @@ export default function VendorMenuPage() {
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/vendor/${session.user.id}/menu-items/${itemId}`,
-        { method: "DELETE" }
+        { credentials: "include", method: "DELETE" }
       );
 
       const result = await response.json();
@@ -330,10 +331,11 @@ export default function VendorMenuPage() {
             >
               <div className="relative aspect-[16/10] bg-gray-50">
                 {item.images?.[0] ? (
-                  <img
-                    src={item.images[0]}
+                  <MenuItemImage
+                    images={item.images}
                     alt={item.itemName}
-                    className="h-full w-full object-cover"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                    className="object-cover"
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center text-gray-300">

@@ -43,12 +43,30 @@ export const auth = betterAuth({
   }),
   baseURL,
   secret,
+  account: {
+    accountLinking: {
+      trustedProviders: ["github", "google",],
+    }
+  },
+
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }
+  },
   user: {
     additionalFields: {
       role: {
         type: ["customer", "vendor", "admin"],
         required: true,
         defaultValue: 'customer',
+      },
+      isBlocked: {
+        type: "boolean",
+        required: false,
+        defaultValue: false,
+        input: false,
       },
     }
 

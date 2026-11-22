@@ -1,7 +1,6 @@
 
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
@@ -11,6 +10,7 @@ import {
   MapPin,
   Loader2,
 } from "lucide-react";
+import MenuItemImage from "@/app/components/shared/MenuItemImage";
 
 type MenuItem = {
   _id: string;
@@ -115,10 +115,11 @@ export default function FeaturedMenu() {
                 className="group overflow-hidden rounded-xl border border-amber-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
               >
                 <div className="relative h-[210px] overflow-hidden bg-[#fff2e5]">
-                  <img
-                    src={item.images?.[0] || "/images/pizzas/margherita.jpg"}
+                  <MenuItemImage
+                    images={item.images}
                     alt={item.itemName}
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover transition duration-500 group-hover:scale-110"
                   />
 
                   <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1.5 text-[10px] font-extrabold text-white shadow-md">
@@ -221,10 +222,11 @@ export default function FeaturedMenu() {
                 className="group overflow-hidden rounded-xl border border-[#eee5db] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
               >
                 <div className="relative h-[210px] overflow-hidden bg-[#fff2e5]">
-                  <img
-                    src={item.images?.[0] || "/images/pizzas/margherita.jpg"}
+                  <MenuItemImage
+                    images={item.images}
                     alt={item.itemName}
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover transition duration-500 group-hover:scale-110"
                   />
 
                   <span className="absolute left-3 top-3 rounded-full bg-[#e6392e] px-3 py-1.5 text-[10px] font-extrabold text-white">
