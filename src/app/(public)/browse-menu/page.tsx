@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
+import MenuItemImage from "@/app/components/shared/MenuItemImage";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -316,10 +317,9 @@ export default function BrowseMenuPage() {
                 className="group overflow-hidden rounded-2xl border border-[#eee5db] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
               >
                 <div className="relative h-56 overflow-hidden bg-[#fff8f3]">
-                  <Image
-                    src={pizza.images?.[0] || "/images/pizzas/margherita.jpg"}
+                  <MenuItemImage
+                    images={pizza.images}
                     alt={pizza.itemName}
-                    fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     className="object-cover transition duration-500 group-hover:scale-105"
                   />
@@ -375,7 +375,7 @@ export default function BrowseMenuPage() {
             </h3>
 
             <p className="mt-2 text-sm text-[#81766e]">
-              We couldn't find any pizzas matching your filters.
+              We couldn&apos;t find any pizzas matching your filters.
             </p>
 
             <button

@@ -2,7 +2,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -16,6 +15,7 @@ import {
   Tag,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import MenuItemImage from "@/app/components/shared/MenuItemImage";
 import toast from "react-hot-toast";
 
 interface MenuItem {
@@ -62,13 +62,6 @@ export default function PizzaDetailsPage({
   }, [params]);
 
   useEffect(() => {
-    if (isPending) return;
-
-    if (!session) {
-      router.replace("/sign-in");
-      return;
-    }
-
     if (!id) return;
 
     const fetchPizza = async () => {
@@ -97,7 +90,7 @@ export default function PizzaDetailsPage({
     };
 
     fetchPizza();
-  }, [id, session, isPending, router]);
+  }, [id]);
 
   useEffect(() => {
     if (!session?.user?.id || !pizza?._id || session.user.role !== "customer") {
@@ -199,8 +192,6 @@ export default function PizzaDetailsPage({
     );
   }
 
-  if (!session) return null;
-
   if (error || !pizza) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
@@ -233,10 +224,9 @@ export default function PizzaDetailsPage({
           <div className="relative">
             <div className="relative aspect-square overflow-hidden rounded-xl bg-gray-100">
               {pizza.images?.[0] ? (
-                <Image
-                  src={pizza.images[0]}
+                <MenuItemImage
+                  images={pizza.images}
                   alt={pizza.itemName}
-                  fill
                   priority
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover"
@@ -254,7 +244,7 @@ export default function PizzaDetailsPage({
                 </span>
               )}
 
-              {session.user.role === "customer" && (
+              {session?.user?.role === "customer" && (
                 <button
                   type="button"
                   onClick={handleFavorite}
@@ -390,7 +380,11 @@ export default function PizzaDetailsPage({
 
             <button
               type="button"
-              onClick={() => router.push(`/order/${pizza._id}`)}
+              onClick={() =>
+                router.push(
+                  session?.user ? `/order/${pizza._id}` : "/sign-in"
+                )
+              }
               disabled={!pizza.isAvailable}
               className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-[#e62e20] px-6 py-4 font-semibold text-white transition hover:bg-[#c92318] disabled:cursor-not-allowed disabled:bg-gray-400"
             >
