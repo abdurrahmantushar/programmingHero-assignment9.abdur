@@ -24,6 +24,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import MenuItemImage from "@/app/components/shared/MenuItemImage";
 import { normalizeCategory } from "@/constants/categories";
+import { authFetch } from "@/lib/auth-fetch";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -90,7 +91,7 @@ export default function OrderPage({
 
     const fetchPizza = async () => {
       try {
-        const response = await fetch(
+        const response = await authFetch(
           `${API_URL}/api/menu-items/${id}`,
           { cache: "no-store" }
         );
@@ -127,7 +128,7 @@ export default function OrderPage({
         setAddressLoading(true);
         setAddressError("");
 
-        const response = await fetch(
+        const response = await authFetch(
           `/api/customer/${session.user.id}/addresses`
         , { credentials: "include" });
 
@@ -204,7 +205,7 @@ export default function OrderPage({
 
       const deliveryAddress = `${selectedAddress.fullName}, ${selectedAddress.phone}, ${selectedAddress.address}, ${selectedAddress.area}, ${selectedAddress.city} - ${selectedAddress.postalCode}`;
 
-      const response = await fetch("/api/orders", { credentials: "include",
+      const response = await authFetch("/api/orders", { credentials: "include",
         method: "POST",
         headers: {
           "Content-Type": "application/json",

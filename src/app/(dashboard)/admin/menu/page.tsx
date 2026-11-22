@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import MenuItemImage from "@/app/components/shared/MenuItemImage";
 import { normalizeCategory } from "@/constants/categories";
+import { authFetch } from "@/lib/auth-fetch";
 
 type MenuStatus = "pending" | "approved" | "rejected";
 type StatusFilter = "all" | MenuStatus;
@@ -81,7 +82,7 @@ export default function AdminMenuPage() {
       if (search.trim()) params.set("search", search.trim());
       if (status !== "all") params.set("status", status);
 
-      const response = await fetch(
+      const response = await authFetch(
         `${API_URL}/api/admin/menu-items?${params.toString()}`,
         { credentials: "include", cache: "no-store" }
       );
@@ -122,7 +123,7 @@ export default function AdminMenuPage() {
     try {
       setActionLoading(item._id);
 
-      const response = await fetch(
+      const response = await authFetch(
         `${API_URL}/api/admin/menu-items/${item._id}/status`,
         { credentials: "include",
           method: "PATCH",
@@ -155,7 +156,7 @@ export default function AdminMenuPage() {
     try {
       setActionLoading(deleteItem._id);
 
-      const response = await fetch(
+      const response = await authFetch(
         `${API_URL}/api/admin/menu-items/${deleteItem._id}`,
         { credentials: "include", method: "DELETE" }
       );

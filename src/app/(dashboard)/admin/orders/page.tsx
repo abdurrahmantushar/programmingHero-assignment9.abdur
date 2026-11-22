@@ -2,6 +2,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { authFetch } from "@/lib/auth-fetch";
 import {
   Search,
   RefreshCw,
@@ -89,7 +90,7 @@ export default function AdminOrdersPage() {
       if (search.trim()) params.set("search", search.trim());
       if (status !== "all") params.set("status", status);
 
-      const response = await fetch(
+      const response = await authFetch(
         `${API_URL}/api/admin/orders?${params.toString()}`,
         { credentials: "include", cache: "no-store" }
       );

@@ -15,6 +15,7 @@ import { authClient } from "@/lib/auth-client";
 import MenuItemImage from "@/app/components/shared/MenuItemImage";
 import { toast } from "sonner";
 import { normalizeCategory } from "@/constants/categories";
+import { authFetch } from "@/lib/auth-fetch";
 
 interface Favorite {
   _id: string;
@@ -48,7 +49,7 @@ export default function FavoritesPage() {
       try {
         setLoading(true);
 
-        const response = await fetch(
+        const response = await authFetch(
           `${API_URL}/api/customer/${session.user.id}/favorites`,
           { credentials: "include", cache: "no-store" }
         );
@@ -80,7 +81,7 @@ export default function FavoritesPage() {
     try {
       setRemovingId(favoriteId);
 
-      const response = await fetch(
+      const response = await authFetch(
         `${API_URL}/api/favorites/${favoriteId}`,
         { credentials: "include",
           method: "DELETE",

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
+import { authFetch } from "@/lib/auth-fetch";
 
 type SubscriptionData = {
   subscriptionPlan: "free" | "premium";
@@ -46,7 +47,7 @@ export default function VendorSubscriptionPage() {
     try {
       setLoading(true);
 
-      const response = await fetch(
+      const response = await authFetch(
         `/api/vendor/${session.user.id}/subscription`,
         { cache: "no-store",
           credentials: 'include',
@@ -91,7 +92,7 @@ const handleUpgrade = async () => {
   try {
     setCheckoutLoading(true);
 
-    const response = await fetch(
+    const response = await authFetch(
       `/api/vendor/${session.user.id}/subscription/checkout`,
       {
         method: "POST",

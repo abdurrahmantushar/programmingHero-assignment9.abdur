@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { authFetch } from "@/lib/auth-fetch";
 import {
     ArrowLeft,
     ArrowRight,
@@ -115,7 +116,7 @@ export default function AdminTransactionsPage() {
                 limit: String(pagination.limit),
             });
 
-            const response = await fetch(
+            const response = await authFetch(
                 `${API_URL}/api/admin/transactions?${params}`,
                 { credentials: "include", cache: "no-store" }
             );

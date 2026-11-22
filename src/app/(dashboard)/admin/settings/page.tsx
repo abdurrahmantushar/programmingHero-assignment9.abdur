@@ -1,7 +1,9 @@
 
 "use client";
 
-import { useEffect, useState } from "react"; import {
+import { useEffect, useState } from "react";
+import { authFetch } from "@/lib/auth-fetch";
+import {
     Settings,
     Store,
     Bell,
@@ -96,7 +98,7 @@ export default function AdminSettingsPage() {
                 setSettingsLoading(true);
                 setSettingsError("");
 
-                const response = await fetch(
+                const response = await authFetch(
                     "/api/admin/settings",
                     { credentials: "include", cache: "no-store" }
                 );
@@ -143,7 +145,7 @@ export default function AdminSettingsPage() {
             setSaved(false);
             setSettingsError("");
 
-            const response = await fetch(
+            const response = await authFetch(
                 "/api/admin/settings",
                 { credentials: "include",
                     method: "PATCH",

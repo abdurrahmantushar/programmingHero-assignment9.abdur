@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
+import { authFetch } from "@/lib/auth-fetch";
 
 type Order = {
   _id: string;
@@ -55,7 +56,7 @@ export default function VendorOrdersPage() {
     try {
       setLoading(true);
 
-      const response = await fetch(
+      const response = await authFetch(
         `/api/vendor/${session.user.id}/orders`,
         { credentials: "include", cache: "no-store" }
       );
@@ -94,7 +95,7 @@ export default function VendorOrdersPage() {
     try {
       setUpdatingId(orderId);
 
-      const response = await fetch(
+      const response = await authFetch(
         `/api/vendor/${session.user.id}/orders/${orderId}`,
         { credentials: "include",
           method: "PATCH",

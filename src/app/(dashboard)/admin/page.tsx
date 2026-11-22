@@ -20,6 +20,7 @@ import {
   ChevronDown,
   AlertCircle,
 } from "lucide-react";
+import { authFetch } from "@/lib/auth-fetch";
 import {
   Cell,
   Pie,
@@ -256,7 +257,7 @@ export default function AdminDashboardPage() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(
+        const response = await authFetch(
           "/api/admin/dashboard",
           { credentials: "include", cache: "no-store" }
         );

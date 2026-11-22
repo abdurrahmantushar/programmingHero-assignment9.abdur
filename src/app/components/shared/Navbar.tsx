@@ -14,6 +14,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { clearAuthToken } from "@/lib/auth-fetch";
 import ThemeToggle from "./ThemeToggle";
 import toast from "react-hot-toast";
 
@@ -45,6 +46,7 @@ export default function Navbar() {
         return;
       }
 
+      clearAuthToken();
       toast.success("Logged out successfully");
       setIsOpen(false);
       setProfileMenuOpen(false);

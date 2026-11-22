@@ -18,6 +18,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { CATEGORY_OPTIONS } from "@/constants/categories";
+import { authFetch } from "@/lib/auth-fetch";
 
 export default function AddMenuItemPage() {
   const router = useRouter();
@@ -88,7 +89,7 @@ export default function AddMenuItemPage() {
           const uploadData = new FormData();
           uploadData.append("image", image);
 
-          const uploadResponse = await fetch(
+          const uploadResponse = await authFetch(
             `https://api.imgbb.com/1/upload?key=${apiKey}`,
             {
               method: "POST",
@@ -116,7 +117,7 @@ export default function AddMenuItemPage() {
         images: imageUrls,
       };
 
-      const response = await fetch(
+      const response = await authFetch(
         `/api/vendor/${session.user.id}/menu-items`,
         { credentials: "include",
           method: "POST",

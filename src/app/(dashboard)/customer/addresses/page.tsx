@@ -17,6 +17,7 @@ import {
   Star,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { authFetch } from "@/lib/auth-fetch";
 
 const API_URL = "";
 
@@ -67,7 +68,7 @@ export default function CustomerAddressesPage() {
       setLoading(true);
       setError("");
 
-      const response = await fetch(
+      const response = await authFetch(
         `${API_URL}/api/customer/${customerId}/addresses`
       , { credentials: "include" });
 
@@ -134,7 +135,7 @@ export default function CustomerAddressesPage() {
         ? `${API_URL}/api/customer/${customerId}/addresses/${editingAddress._id}`
         : `${API_URL}/api/customer/${customerId}/addresses`;
 
-      const response = await fetch(url, { credentials: "include",
+      const response = await authFetch(url, { credentials: "include",
         method: editingAddress ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
@@ -183,7 +184,7 @@ export default function CustomerAddressesPage() {
       setError("");
       setSuccess("");
 
-      const response = await fetch(
+      const response = await authFetch(
         `${API_URL}/api/customer/${customerId}/addresses/${addressId}`,
         { credentials: "include", method: "DELETE" }
       );

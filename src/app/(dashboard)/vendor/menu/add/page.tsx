@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import toast from "react-hot-toast";
 import { CATEGORY_OPTIONS } from "@/constants/categories";
+import { authFetch } from "@/lib/auth-fetch";
 import {
   ArrowLeft,
   ImagePlus,
@@ -62,7 +63,7 @@ export default function AddMenuItemPage() {
 
     const fetchSubscription = async () => {
       try {
-        const response = await fetch(
+        const response = await authFetch(
           `/api/vendor/${session.user.id}/subscription`,
           { credentials: "include", cache: "no-store" }
         );
@@ -195,7 +196,7 @@ export default function AddMenuItemPage() {
           const uploadFormData = new FormData();
           uploadFormData.append("image", image);
 
-          const uploadResponse = await fetch(
+          const uploadResponse = await authFetch(
             `https://api.imgbb.com/1/upload?key=${apiKey}`,
             {
               method: "POST",
@@ -227,7 +228,7 @@ export default function AddMenuItemPage() {
         images: imageUrls,
       };
 
-      const response = await fetch(
+      const response = await authFetch(
         `/api/vendor/${session.user.id}/menu-items`,
         { credentials: "include",
           method: "POST",

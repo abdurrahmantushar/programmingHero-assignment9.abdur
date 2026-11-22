@@ -19,6 +19,7 @@ import { authClient } from "@/lib/auth-client";
 import MenuItemImage from "@/app/components/shared/MenuItemImage";
 import { toast } from "sonner";
 import { CATEGORY_OPTIONS, normalizeCategory } from "@/constants/categories";
+import { authFetch } from "@/lib/auth-fetch";
 
 type MenuItem = {
   _id: string;
@@ -50,7 +51,7 @@ export default function VendorMenuPage() {
     try {
       setLoading(true);
 
-      const response = await fetch(
+      const response = await authFetch(
         `/api/vendor/${session.user.id}/menu-items`,
         { credentials: "include", cache: "no-store" }
       );
@@ -92,7 +93,7 @@ export default function VendorMenuPage() {
     try {
       setDeletingId(itemId);
 
-      const response = await fetch(
+      const response = await authFetch(
         `/api/vendor/${session.user.id}/menu-items/${itemId}`,
         { credentials: "include", method: "DELETE" }
       );

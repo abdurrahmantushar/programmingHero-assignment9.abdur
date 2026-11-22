@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
+import { authFetch } from "@/lib/auth-fetch";
 
 type UserRole = "admin" | "vendor" | "customer";
 
@@ -84,7 +85,7 @@ export default function AdminUsersPage() {
       if (search.trim()) params.set("search", search.trim());
       if (role !== "all") params.set("role", role);
 
-      const response = await fetch(
+      const response = await authFetch(
         `${API_URL}/api/admin/users?${params.toString()}`,
         { credentials: "include", cache: "no-store" }
       );
@@ -127,7 +128,7 @@ export default function AdminUsersPage() {
     try {
       setActionLoading(selectedUser._id);
 
-      const response = await fetch(
+      const response = await authFetch(
         `${API_URL}/api/admin/users/${selectedUser._id}/role`,
         { credentials: "include",
           method: "PATCH",
@@ -162,7 +163,7 @@ export default function AdminUsersPage() {
     try {
       setActionLoading(deleteUser._id);
 
-      const response = await fetch(
+      const response = await authFetch(
         `${API_URL}/api/admin/users/${deleteUser._id}`,
         { credentials: "include", method: "DELETE" }
       );
@@ -197,7 +198,7 @@ export default function AdminUsersPage() {
     try {
       setActionLoading(blockTarget._id);
 
-      const response = await fetch(
+      const response = await authFetch(
         `${API_URL}/api/admin/users/${blockTarget._id}/block`,
         {
           credentials: "include",

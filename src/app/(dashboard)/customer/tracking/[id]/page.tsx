@@ -16,6 +16,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { authFetch } from "@/lib/auth-fetch";
 
 type Order = {
   _id: string;
@@ -67,7 +68,7 @@ export default function OrderTrackingPage({
         setLoading(true);
         setError("");
 
-        const response = await fetch(
+        const response = await authFetch(
           `/api/customer/${session.user.id}/orders/${orderId}`
         , { credentials: "include" });
 

@@ -1,5 +1,15 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Environment Variables
+
+Copy `.env.example` to `.env` and configure the required values.
+
+Required for JWT authentication:
+
+- `JWT_SECRET` (server-only): shared secret used by the Next.js server to sign JWTs and by `pizzahub-server` to verify them. Do **not** expose this as a `NEXT_PUBLIC_*` variable.
+
+Other required variables are listed in `.env.example`.
+
 ## Getting Started
 
 First, run the development server:

@@ -24,6 +24,7 @@ import {
     type LucideIcon,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { authFetch, clearAuthToken } from "@/lib/auth-fetch";
 import toast from "react-hot-toast";
 
 const API_URL = "";
@@ -129,9 +130,9 @@ export default function ProfilePage() {
         if (isVendor) {
           const [dashboardResponse, subscriptionResponse, menuResponse] =
             await Promise.all([
-              fetch(`${API_URL}/api/vendor/${userId}/dashboard`, { credentials: "include" }),
-              fetch(`${API_URL}/api/vendor/${userId}/subscription`, { credentials: "include" }),
-              fetch(`${API_URL}/api/vendor/${userId}/menu-items`, { credentials: "include" }),
+              authFetch(`${API_URL}/api/vendor/${userId}/dashboard`, { credentials: "include" }),
+              authFetch(`${API_URL}/api/vendor/${userId}/subscription`, { credentials: "include" }),
+              authFetch(`${API_URL}/api/vendor/${userId}/menu-items`, { credentials: "include" }),
             ]);
 
           const [dashboardResult, subscriptionResult, menuResult] =
@@ -154,8 +155,8 @@ export default function ProfilePage() {
           }
         } else if (!isAdmin) {
           const [dashboardResponse, addressesResponse] = await Promise.all([
-            fetch(`${API_URL}/api/customer/${userId}/dashboard`, { credentials: "include" }),
-            fetch(`${API_URL}/api/customer/${userId}/addresses`, { credentials: "include" }),
+            authFetch(`${API_URL}/api/customer/${userId}/dashboard`, { credentials: "include" }),
+            authFetch(`${API_URL}/api/customer/${userId}/addresses`, { credentials: "include" }),
           ]);
 
           const [dashboardResult, addressesResult] = await Promise.all([
@@ -314,6 +315,7 @@ export default function ProfilePage() {
         return;
       }
 
+      clearAuthToken();
       toast.success("Logged out successfully");
       router.replace("/");
       router.refresh();

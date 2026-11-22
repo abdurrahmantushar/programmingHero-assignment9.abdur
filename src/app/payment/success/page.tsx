@@ -15,6 +15,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { authFetch } from "@/lib/auth-fetch";
 
 type VerificationStatus = "loading" | "pending" | "success" | "error";
 
@@ -49,7 +50,7 @@ const verifyPayment = async () => {
     setStatus("loading");
     setMessage("Verifying your payment with Stripe...");
 
-    const response = await fetch(
+    const response = await authFetch(
       `/api/vendor/${session.user.id}/subscription/verify`,
       {
         method: "POST",
