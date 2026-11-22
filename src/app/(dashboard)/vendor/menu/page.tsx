@@ -44,6 +44,7 @@ export default function VendorMenuPage() {
   const [category, setCategory] = useState("all");
   const [status, setStatus] = useState("all");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<MenuItem | null>(null);
 
   const fetchMenuItems = useCallback(async () => {
     if (!session?.user?.id) return;
@@ -83,12 +84,10 @@ export default function VendorMenuPage() {
     }
   }, [isPending, session?.user?.id, fetchMenuItems]);
 
-  const handleDelete = async (itemId: string) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this menu item?"
-    );
+  const handleDelete = async () => {
+    if (!itemToDelete || !session?.user?.id) return;
 
-    if (!confirmed || !session?.user?.id) return;
+    const itemId = itemToDelete._id;
 
     try {
       setDeletingId(itemId);
@@ -104,9 +103,8 @@ export default function VendorMenuPage() {
         throw new Error(result.message || "Failed to delete menu item.");
       }
 
-      setMenuItems((prev) =>
-        prev.filter((item) => item._id !== itemId)
-      );
+      setMenuItems((prev) => prev.filter((item) => item._id !== itemId));
+      setItemToDelete(null);
 
       toast.success("Menu item deleted successfully.");
     } catch (error) {
@@ -409,7 +407,7 @@ export default function VendorMenuPage() {
 
                     <button
                       type="button"
-                      onClick={() => handleDelete(item._id)}
+                      onClick={() => setItemToDelete(item)}
                       disabled={deletingId === item._id}
                       className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
                       title="Delete menu item"
@@ -425,6 +423,62 @@ export default function VendorMenuPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {itemToDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-menu-item-title"
+          onClick={() => {
+            if (!deletingId) setItemToDelete(null);
+          }}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600">
+              <Trash2 size={22} />
+            </div>
+
+            <h3
+              id="delete-menu-item-title"
+              className="mt-4 text-lg font-bold text-gray-900"
+            >
+              Delete Menu Item?
+            </h3>
+
+            <p className="mt-2 text-sm leading-6 text-gray-500">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold text-gray-800">
+                {itemToDelete.itemName}
+              </span>
+              ? This action cannot be undone.
+            </p>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setItemToDelete(null)}
+                disabled={deletingId === itemToDelete._id}
+                className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deletingId === itemToDelete._id}
+                className="flex-1 rounded-xl bg-red-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
+              >
+                {deletingId === itemToDelete._id ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
