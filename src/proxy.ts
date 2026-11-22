@@ -1,3 +1,4 @@
+
 import { NextResponse, type NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 
@@ -21,6 +22,26 @@ function matchesRoute(pathname: string, route: string) {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  if (pathname === "/sign-in" || pathname === "/sign-up") {
+    try {
+      const session = await auth.api.getSession({
+        headers: request.headers,
+        query: { disableRefresh: true },
+      });
+
+      if (session?.user && session.user.isBlocked !== true) {
+        const role = session.user.role;
+
+        return NextResponse.redirect(
+          new URL(roleHome[role ?? ""] || "/", request.url)
+        );
+      }
+    } catch {
+      return NextResponse.next();
+    }
+
+    return NextResponse.next();
+  }
 
   const roleRoute = Object.keys(roleRoutes).find((route) =>
     matchesRoute(pathname, route)

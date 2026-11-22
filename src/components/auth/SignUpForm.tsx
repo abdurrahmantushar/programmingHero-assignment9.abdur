@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Store, Eye, EyeOff, Mail, User } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import toast from "react-hot-toast";
 
 export default function SignUpForm() {
     const router = useRouter();
@@ -15,6 +16,7 @@ export default function SignUpForm() {
     const [role, setRole] = useState<"customer" | "vendor">("customer");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [googleLoading, setGoogleLoading] = useState(false);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -60,6 +62,25 @@ export default function SignUpForm() {
             setLoading(false);
         }
     };
+      const handleGoogleSignIn = async () => {
+        try {
+          setGoogleLoading(true);
+    
+          const { error } = await authClient.signIn.social({
+            provider: "google",
+            callbackURL: "/",
+          });
+    
+          if (error) {
+            toast.error(error.message || "Google login failed.");
+            setGoogleLoading(false);
+          }
+        } catch {
+          toast.error("Something went wrong. Please try again.");
+          setGoogleLoading(false);
+        }
+      };
+    
 
     return (
         <div
@@ -282,13 +303,15 @@ export default function SignUpForm() {
                     <div className="h-px flex-1 bg-white/50" />
                 </div>
 
-                <button
+                    <button
                     type="button"
-                    className="flex w-full items-center justify-center gap-3 rounded-xl border border-white/60 bg-white/95 py-3 text-sm font-semibold text-[#25211E] transition hover:bg-white"
-                >
+                    onClick={handleGoogleSignIn}
+                    disabled={googleLoading}
+                    className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#EEE5DB] bg-white py-3 text-sm font-semibold text-[#25211E] transition hover:bg-[#FFF8F0] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
                     <span className="text-lg font-bold text-[#4285F4]">G</span>
-                    Continue with Google
-                </button>
+                    {googleLoading ? "Connecting to Google..." : "Continue with Google"}
+                    </button>
 
                 <p className="mt-6 text-center text-sm font-medium text-white">
                     Already have an account?{" "}

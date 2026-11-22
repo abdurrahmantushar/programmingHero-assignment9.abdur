@@ -51,7 +51,18 @@ export default function SignInForm() {
 
       toast.success("Login successful!");
 
-      router.replace("/");
+      const { data: session } = await authClient.getSession();
+
+      const role = session?.user?.role;
+
+      const redirectPath =
+        role === "admin"
+          ? "/admin"
+          : role === "vendor"
+            ? "/vendor"
+            : "/customer";
+
+      router.replace(redirectPath);
       router.refresh();
     } catch {
       toast.error("Something went wrong. Please try again.");
