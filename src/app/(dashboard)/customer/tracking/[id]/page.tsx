@@ -110,7 +110,7 @@ export default function OrderTrackingPage({
         <p className="mt-2 text-sm text-gray-500">
           {error || "We couldn't find this order."}
         </p>
-        <Link
+        <Link prefetch={false}
           href="/customer/orders"
           className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#e62e20] px-5 py-3 text-sm font-bold text-white hover:bg-[#c92318]"
         >
@@ -178,7 +178,7 @@ export default function OrderTrackingPage({
   return (
     <div className="mx-auto max-w-6xl space-y-7">
       <div>
-        <Link
+        <Link prefetch={false}
           href={`/customer/orders/${order._id}`}
           className="inline-flex items-center gap-2 text-sm font-semibold text-gray-500 transition hover:text-[#e62e20]"
         >
@@ -430,7 +430,7 @@ export default function OrderTrackingPage({
         </div>
       </div>
 
-      <Link
+      <Link prefetch={false}
         href={`/customer/orders/${order._id}`}
         className="inline-flex items-center gap-2 rounded-xl border border-orange-200 bg-white px-5 py-3 text-sm font-bold text-[#e62e20] transition hover:bg-orange-50"
       >

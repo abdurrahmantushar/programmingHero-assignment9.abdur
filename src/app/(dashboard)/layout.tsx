@@ -188,6 +188,7 @@ function DashboardLayoutContent({
 
             return (
               <Link
+                prefetch={false}
                 key={item.href}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}

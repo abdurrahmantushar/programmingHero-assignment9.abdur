@@ -578,7 +578,7 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="mt-6 space-y-3">
-            <Link
+            <Link prefetch={false}
               href="/admin/users"
               className="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 transition hover:-translate-y-0.5 hover:border-orange-200 hover:bg-orange-50/50 hover:shadow-sm"
             >
@@ -593,7 +593,7 @@ export default function AdminDashboardPage() {
               </span>
             </Link>
 
-            <Link
+            <Link prefetch={false}
               href="/admin/menu"
               className="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 transition hover:-translate-y-0.5 hover:border-orange-200 hover:bg-orange-50/50 hover:shadow-sm"
             >
@@ -608,7 +608,7 @@ export default function AdminDashboardPage() {
               </span>
             </Link>
 
-            <Link
+            <Link prefetch={false}
               href="/admin/orders"
               className="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 transition hover:-translate-y-0.5 hover:border-orange-200 hover:bg-orange-50/50 hover:shadow-sm"
             >
@@ -623,7 +623,7 @@ export default function AdminDashboardPage() {
               </span>
             </Link>
 
-            <Link
+            <Link prefetch={false}
               href="/admin/transactions"
               className="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 transition hover:-translate-y-0.5 hover:border-orange-200 hover:bg-orange-50/50 hover:shadow-sm"
             >
@@ -656,7 +656,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            <Link
+            <Link prefetch={false}
               href="/admin/users"
               className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-bold text-[#e62e20] transition hover:border-orange-200 hover:bg-orange-50"
             >
@@ -744,7 +744,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            <Link
+            <Link prefetch={false}
               href="/admin/orders"
               className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-bold text-[#e62e20] transition hover:border-orange-200 hover:bg-orange-50"
             >
@@ -847,7 +847,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          <Link
+          <Link prefetch={false}
             href="/admin/transactions"
             className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#e62e20] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#e52b19]"
           >

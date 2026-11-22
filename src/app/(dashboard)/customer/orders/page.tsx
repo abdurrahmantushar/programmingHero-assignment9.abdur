@@ -339,6 +339,7 @@ export default function MyOrdersPage() {
                     </div>
 
                     <Link
+                      prefetch={false}
                       href={`/customer/orders/${order._id}`}
                       className="inline-flex items-center gap-2 rounded-xl border border-orange-200 px-4 py-2.5 text-sm font-bold text-[#e62e20] transition hover:bg-orange-50"
                     >

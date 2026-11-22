@@ -152,7 +152,7 @@ export default function AddMenuItemPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-7">
       <div>
-        <Link
+        <Link prefetch={false}
           href="/vendor/menu"
           className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-gray-500 transition hover:text-[#e62e20]"
         >
@@ -366,7 +366,7 @@ export default function AddMenuItemPage() {
         </section>
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <Link
+          <Link prefetch={false}
             href="/vendor/menu"
             className="rounded-xl border border-gray-200 px-6 py-3 text-center text-sm font-bold text-gray-600 transition hover:bg-gray-50"
           >

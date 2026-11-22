@@ -569,6 +569,7 @@ export default function ProfilePage() {
                   </p>
                 </div>
                 <Link
+                  prefetch={false}
                   href="/vendor/menu"
                   className="text-sm font-bold text-[#e52b19] hover:underline"
                 >
@@ -583,6 +584,7 @@ export default function ProfilePage() {
                     No menu items yet
                   </p>
                   <Link
+                    prefetch={false}
                     href="/vendor/menu/add"
                     className="mt-2 inline-block text-sm font-bold text-[#e52b19]"
                   >
@@ -632,6 +634,7 @@ export default function ProfilePage() {
               </p>
               <div className="mt-5 grid gap-4 sm:grid-cols-3">
                 <Link
+                  prefetch={false}
                   href="/admin/users"
                   className="flex items-center gap-3 rounded-xl border border-orange-100 bg-orange-50/50 p-4 text-sm font-bold text-gray-800 transition hover:border-[#e52b19] hover:text-[#e52b19]"
                 >
@@ -639,6 +642,7 @@ export default function ProfilePage() {
                   Manage Users
                 </Link>
                 <Link
+                  prefetch={false}
                   href="/admin/menu"
                   className="flex items-center gap-3 rounded-xl border border-orange-100 bg-orange-50/50 p-4 text-sm font-bold text-gray-800 transition hover:border-[#e52b19] hover:text-[#e52b19]"
                 >
@@ -646,6 +650,7 @@ export default function ProfilePage() {
                   Manage Menu Items
                 </Link>
                 <Link
+                  prefetch={false}
                   href="/admin/transactions"
                   className="flex items-center gap-3 rounded-xl border border-orange-100 bg-orange-50/50 p-4 text-sm font-bold text-gray-800 transition hover:border-[#e52b19] hover:text-[#e52b19]"
                 >
@@ -713,6 +718,7 @@ export default function ProfilePage() {
                 </p>
               </div>
               <Link
+                prefetch={false}
                 href="/customer/addresses"
                 className="flex items-center gap-1 text-sm font-bold text-[#e52b19] hover:text-red-700"
               >
@@ -746,6 +752,7 @@ export default function ProfilePage() {
                   </p>
                 </div>
                 <Link
+                  prefetch={false}
                   href="/customer/addresses"
                   className="text-sm font-bold text-[#e52b19]"
                 >
@@ -785,6 +792,7 @@ export default function ProfilePage() {
                 </p>
               </div>
               <Link
+                prefetch={false}
                 href={ordersHref}
                 className="text-sm font-bold text-[#e52b19] hover:underline"
               >
@@ -797,6 +805,7 @@ export default function ProfilePage() {
                 <ShoppingBag className="mx-auto text-gray-300" size={40} />
                 <p className="mt-3 font-semibold text-gray-700">No orders yet</p>
                 <Link
+                  prefetch={false}
                   href={isVendor ? "/vendor/orders" : "/browse-menu"}
                   className="mt-3 inline-block text-sm font-bold text-[#e52b19]"
                 >
@@ -844,6 +853,7 @@ export default function ProfilePage() {
                         </span>
                       </div>
                       <Link
+                        prefetch={false}
                         href={
                           isVendor ? "/vendor/orders" : `/customer/orders/${order._id}`
                         }

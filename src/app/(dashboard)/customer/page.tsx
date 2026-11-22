@@ -238,6 +238,7 @@ export default function CustomerDashboardPage() {
             </div>
 
             <Link
+              prefetch={false}
               href="/customer/orders"
               className="inline-flex items-center gap-2 text-sm font-bold text-[#e62e20] hover:underline"
             >
@@ -301,6 +302,7 @@ export default function CustomerDashboardPage() {
                     </div>
 
                     <Link
+                      prefetch={false}
                       href={`/customer/orders/${order._id}`}
                       className="rounded-lg border border-orange-200 p-2 text-gray-500 transition hover:border-[#e62e20] hover:text-[#e62e20]"
                       aria-label="View order details"
@@ -338,6 +340,7 @@ export default function CustomerDashboardPage() {
               </Link>
 
               <Link
+                prefetch={false}
                 href="/customer/addresses"
                 className="flex items-center gap-3 rounded-xl bg-orange-50 p-4 transition hover:bg-orange-100"
               >
@@ -354,6 +357,7 @@ export default function CustomerDashboardPage() {
               </Link>
 
               <Link
+                prefetch={false}
                 href="/customer/orders"
                 className="flex items-center gap-3 rounded-xl bg-orange-50 p-4 transition hover:bg-orange-100"
               >

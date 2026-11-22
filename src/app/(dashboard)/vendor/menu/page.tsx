@@ -198,6 +198,7 @@ export default function VendorMenuPage() {
         </div>
 
         <Link
+          prefetch={false}
           href="/vendor/menu/add"
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#e62e20] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#c92318]"
         >
@@ -314,6 +315,7 @@ export default function VendorMenuPage() {
 
           {menuItems.length === 0 && (
             <Link
+              prefetch={false}
               href="/vendor/menu/add"
               className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#e62e20] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#c92318]"
             >
@@ -395,6 +397,7 @@ export default function VendorMenuPage() {
 
                   <div className="flex items-center gap-2">
                     <Link
+                      prefetch={false}
                       href={`/vendor/menu/edit/${item._id}`}
                       className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
                       title="Edit menu item"
